@@ -43,19 +43,19 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .sidebar-transition { transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-transition { transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col antialiased bg-slate-50">
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white transition-opacity duration-300">
+    <!-- Loading Overlay (타임아웃 세이프가드 탑재) -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white transition-opacity duration-200">
         <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-500 mb-4"></i>
-        <p class="text-base sm:text-lg font-medium text-slate-100" id="loadingText">클라우드 실시간 동기화 중...</p>
+        <p class="text-base sm:text-lg font-medium text-slate-100" id="loadingText">데이터 동기화 중...</p>
     </div>
 
     <!-- ======================================================== -->
-    <!-- 1. GENERAL EMPLOYEE TOP HEADER (관리자 모드 시 완전 숨김) -->
+    <!-- 1. GENERAL EMPLOYEE TOP HEADER                          -->
     <!-- ======================================================== -->
     <header id="employeeHeader" class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -65,7 +65,7 @@
                 </div>
                 <div>
                     <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">출장 체크 시스템</h1>
-                    <p class="text-xs text-slate-500 hidden sm:block">한국 공휴일 기준 보상휴가 자동 계산 및 실시간 전사 관리</p>
+                    <p class="text-xs text-slate-500 hidden sm:block">한국 공휴일 기준 보상휴가 자동 계산 및 전사 관리</p>
                 </div>
             </div>
 
@@ -132,7 +132,7 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- 3. PENDING APPROVAL SCREEN (승인 대기 안내 화면)         -->
+    <!-- 3. PENDING APPROVAL SCREEN (승인 대기 안내)              -->
     <!-- ======================================================== -->
     <div id="pendingApprovalSection" class="hidden max-w-md mx-auto my-16 px-4 w-full">
         <div class="bg-white rounded-2xl shadow-xl border border-amber-200 p-8 text-center space-y-4">
@@ -141,8 +141,8 @@
             </div>
             <h3 class="text-xl font-black text-slate-800">관리자 가입 승인 대기 중</h3>
             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                현재 계정은 관리자의 가입 승인을 기다리고 있습니다.<br>
-                관리자가 승인 처리한 후에 정상적으로 출장 체크 및 휴무 등록 시스템을 이용하실 수 있습니다.
+                현재 계정은 최고 관리자의 승인을 기다리고 있습니다.<br>
+                관리자가 승인 처리한 후에 정상적으로 출장 체크 및 휴무 등록을 이용하실 수 있습니다.
             </p>
             <div class="pt-2">
                 <button onclick="handleLogout()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs sm:text-sm transition">
@@ -162,7 +162,7 @@
             <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h2 class="text-lg sm:text-2xl font-black" id="welcomeMessage">반갑습니다! 👋</h2>
-                    <p class="text-xs sm:text-sm text-blue-100 mt-1">출장 및 보상휴가 발생/사용 내역을 클라우드에 실시간으로 관리하세요.</p>
+                    <p class="text-xs sm:text-sm text-blue-100 mt-1">출장 및 보상휴가 발생/사용 내역을 클라우드에 안전하게 관리하세요.</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="promptChangeName()" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs sm:text-sm font-semibold backdrop-blur-md border border-white/20 transition flex items-center gap-1.5">
@@ -300,7 +300,7 @@
                             <span class="font-bold text-slate-700" id="resultLabel">적립될 보상휴가:</span>
                             <span class="font-black text-emerald-600 text-sm" id="calculatedResultText">+1.5일 (12시간)</span>
                         </div>
-                        <p class="text-[10px] text-slate-400" id="calculationDesc">* 근로기준법 제57조: 휴일근로 8h 이내 1.5배, 8h 초과 2배</p>
+                        <p class="text-[10px] text-slate-400" id="calculationDesc">* 근로기준법: 휴일 8h 이내 1.5배, 8h 초과 2배</p>
                     </div>
 
                     <div>
@@ -358,7 +358,7 @@
     </main>
 
     <!-- ======================================================== -->
-    <!-- 5. [LAYOUT 1] INDEPENDENT ADMIN CONTROL CENTER (전용 관제) -->
+    <!-- 5. INDEPENDENT ADMIN CONTROL CENTER (독립 관리자 관제 센터) -->
     <!-- ======================================================== -->
     <div id="adminControlCenter" class="hidden min-h-screen flex flex-col bg-slate-900 text-slate-100 z-40 fixed inset-0 overflow-hidden">
         
@@ -374,15 +374,20 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h2 class="text-base sm:text-lg font-black tracking-tight text-white">최고 관리자 관제 센터</h2>
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> 실시간 Live
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                            동기화: <span id="lastSyncTimeText">방금</span>
                         </span>
                     </div>
-                    <p class="text-[11px] text-slate-400 hidden sm:block">전사 출장 일정 및 보상휴가 실시간 통제 시스템</p>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">전사 출장 및 보상휴가 통합 통제 대시보드</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
+                <!-- 수동 데이터 즉시 새로고침 버튼 -->
+                <button onclick="refreshAdminData(true)" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
+                    <span>데이터 새로고침</span>
+                </button>
                 <button onclick="openAdminOverrideModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
                     <i class="fa-solid fa-plus-circle"></i> <span class="hidden sm:inline">사원 휴무</span> 강제 등록
                 </button>
@@ -391,7 +396,7 @@
                 </button>
                 <button onclick="exitAdminMode()" class="px-3 py-1.5 bg-rose-600/90 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                    <span>관제 센터 나가기</span>
+                    <span>나가기</span>
                 </button>
             </div>
         </header>
@@ -426,10 +431,10 @@
 
                 <!-- Admin Status Card in Sidebar -->
                 <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-1">
-                    <p class="text-slate-400 font-semibold flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle-check text-emerald-400 text-[10px]"></i> 실시간 Firestore 연동
+                    <p class="text-slate-300 font-semibold flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield-check text-emerald-400 text-[11px]"></i> 안정적 클라우드 연결
                     </p>
-                    <p class="text-[11px] text-slate-500">모든 사원의 입력이 새로고침 없이 즉시 반영됩니다.</p>
+                    <p class="text-[11px] text-slate-500">인덱스 에러 없는 안전한 서브컬렉션 집계 방식입니다.</p>
                 </div>
             </aside>
 
@@ -453,7 +458,7 @@
                             <p class="text-[11px] font-bold text-slate-400 uppercase">가입 승인 대기</p>
                             <h4 class="text-xl sm:text-2xl font-black text-amber-400 mt-1" id="kpiPendingUsers">0건</h4>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg" id="kpiPendingIconBox">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
                             <i class="fa-solid fa-user-clock"></i>
                         </div>
                     </div>
@@ -479,7 +484,7 @@
                     </div>
                 </div>
 
-                <!-- [VIEW 1] 사원 및 승인 관리 (Member & Approval Hub) -->
+                <!-- [VIEW 1] 사원 및 승인 관리 -->
                 <div id="adminView-members" class="space-y-5">
                     <!-- 가입 승인 대기 섹션 -->
                     <div id="adminPendingSection" class="bg-slate-800/90 border border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3">
@@ -488,7 +493,7 @@
                                 <i class="fa-solid fa-user-clock"></i> 가입 승인 대기 신청 목록
                                 <span id="adminPendingBadgeInside" class="px-2 py-0.5 text-xs bg-amber-400 text-slate-950 font-black rounded-full">0건</span>
                             </h3>
-                            <span class="text-xs text-slate-400 hidden sm:inline">승인 전까지는 일반 대시보드 접근이 차단됩니다.</span>
+                            <span class="text-xs text-slate-400 hidden sm:inline">승인 전까지는 일반 대시보드 접근이 제한됩니다.</span>
                         </div>
                         <div class="overflow-x-auto border border-slate-700/60 rounded-xl">
                             <table class="w-full text-left border-collapse text-xs sm:text-sm">
@@ -497,7 +502,7 @@
                                         <th class="p-3">성함</th>
                                         <th class="p-3">이메일</th>
                                         <th class="p-3">가입 신청일</th>
-                                        <th class="p-3 text-right">승인 액션</th>
+                                        <th class="p-3 text-right">승인 처리</th>
                                     </tr>
                                 </thead>
                                 <tbody id="adminPendingTableBody" class="divide-y divide-slate-700/60 text-slate-200"></tbody>
@@ -512,7 +517,7 @@
                                 <h3 class="text-base font-bold text-white flex items-center gap-2">
                                     <i class="fa-solid fa-address-book text-blue-400"></i> 사원 마스터 명단 및 휴무 현황
                                 </h3>
-                                <p class="text-xs text-slate-400 mt-0.5">사원을 클릭하여 해당 사원의 캘린더를 바로 확인하거나 계정 상태를 통제할 수 있습니다.</p>
+                                <p class="text-xs text-slate-400 mt-0.5">사원을 클릭하여 해당 사원의 캘린더를 바로 확인하거나 개별 백업/수정을 진행할 수 있습니다.</p>
                             </div>
                             <input type="text" id="adminMemberSearchInput" oninput="renderMemberManagementTable()" placeholder="이름 또는 이메일 검색..." class="px-3.5 py-1.5 rounded-xl border border-slate-700 bg-slate-950 text-slate-200 text-xs outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64">
                         </div>
@@ -527,7 +532,7 @@
                                         <th class="p-3">총 발생</th>
                                         <th class="p-3">총 사용</th>
                                         <th class="p-3">잔여 휴무</th>
-                                        <th class="p-3 text-right">계정 통제 작업</th>
+                                        <th class="p-3 text-right">개별 백업 / 계정 통제</th>
                                     </tr>
                                 </thead>
                                 <tbody id="adminMemberTableBody" class="divide-y divide-slate-700/60 text-slate-200"></tbody>
@@ -536,7 +541,7 @@
                     </div>
                 </div>
 
-                <!-- [VIEW 2] 전사 출장 캘린더 (Unified Calendar Monitor) -->
+                <!-- [VIEW 2] 전사 출장 캘린더 -->
                 <div id="adminView-calendar" class="hidden space-y-4 bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 sm:p-6 shadow-lg">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/80">
                         <div class="flex items-center gap-2">
@@ -564,3 +569,1639 @@
                     <!-- Monthly Stats -->
                     <div class="flex items-center gap-2 text-xs py-1">
                         <div class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold" id="adminCalStatEarned">발생: 0일</div>
+                        <div class="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/30 font-bold" id="adminCalStatUsed">사용: 0일</div>
+                        <div class="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/30 font-black" id="adminCalStatNet">순변동: 0일</div>
+                    </div>
+
+                    <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold py-1.5 bg-slate-950/60 rounded-xl border border-slate-700/60">
+                        <div class="text-rose-400 py-0.5">일</div>
+                        <div class="text-slate-300 py-0.5">월</div>
+                        <div class="text-slate-300 py-0.5">화</div>
+                        <div class="text-slate-300 py-0.5">수</div>
+                        <div class="text-slate-300 py-0.5">목</div>
+                        <div class="text-slate-300 py-0.5">금</div>
+                        <div class="text-blue-400 py-0.5">토</div>
+                    </div>
+
+                    <div id="adminCalendarGrid" class="grid grid-cols-7 gap-1 sm:gap-1.5 flex-1 min-h-[420px]"></div>
+                </div>
+
+                <!-- [VIEW 3] 내역 통합 조회 / 보정 / 일괄 삭제 -->
+                <div id="adminView-records" class="hidden space-y-4 bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 sm:p-6 shadow-lg">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/80">
+                        <div>
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-emerald-400"></i>
+                                <span id="adminRecordsTitle">전사 출장 및 휴무 내역 관리</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">체크박스를 선택하여 여러 내역을 안전하게 일괄 삭제할 수 있습니다.</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label class="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-300">
+                                <input type="checkbox" id="selectAllAdminRecordsCheck" onchange="toggleSelectAllAdminRecords(this.checked)" class="w-4 h-4 rounded text-blue-600 bg-slate-950 border-slate-700">
+                                <span>전체 선택</span>
+                            </label>
+                            <button type="button" onclick="deleteSelectedAdminRecords()" id="adminBatchDeleteBtn" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm disabled:opacity-40" disabled>
+                                <i class="fa-solid fa-trash-can"></i> 선택 삭제 (<span id="adminDeleteCountBadge">0</span>건)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto border border-slate-700/60 rounded-xl">
+                        <table class="w-full text-left border-collapse text-xs sm:text-sm min-w-[700px]">
+                            <thead>
+                                <tr class="bg-slate-950/70 border-b border-slate-700 text-slate-400 font-bold uppercase">
+                                    <th class="p-3 w-10 text-center">선택</th>
+                                    <th class="p-3">사원명</th>
+                                    <th class="p-3">구분</th>
+                                    <th class="p-3">날짜</th>
+                                    <th class="p-3">유형/분류</th>
+                                    <th class="p-3">일수(시간)</th>
+                                    <th class="p-3">출장지 및 사유</th>
+                                    <th class="p-3 text-right">보정 작업</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminRecordsTableBody" class="divide-y divide-slate-700/60 text-slate-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- [VIEW 4] 시스템 설정 / 전체 백업 및 복원 -->
+                <div id="adminView-settings" class="hidden space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Password Management Card -->
+                        <div class="bg-slate-800/90 border border-slate-700/80 p-5 rounded-2xl space-y-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+                                    <i class="fa-solid fa-key"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white text-sm">관리자 마스터 비밀번호 설정</h4>
+                                    <p class="text-xs text-slate-400">관제 센터 진입 비밀번호를 변경합니다.</p>
+                                </div>
+                            </div>
+                            <div class="pt-2">
+                                <button onclick="openChangeAdminPassModal()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-xs transition">
+                                    비밀번호 변경하기
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Global JSON Backup/Restore Card -->
+                        <div class="bg-slate-800/90 border border-slate-700/80 p-5 rounded-2xl space-y-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
+                                    <i class="fa-solid fa-database"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white text-sm">전체 데이터 백업 및 복원</h4>
+                                    <p class="text-xs text-slate-400">전사 프로필 및 모든 휴무 내역 통합 관리</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 pt-2">
+                                <button onclick="exportBackupJSON()" class="py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-download"></i> 전체 백업 (JSON)
+                                </button>
+                                <button onclick="triggerImportJSON('global')" class="py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-upload"></i> 전체 복원 (JSON)
+                                </button>
+                                <input type="file" id="globalBackupFileInput" accept=".json" class="hidden" onchange="handleGlobalBackupFileSelect(event)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file inputs for individual restore -->
+    <input type="file" id="singleUserBackupFileInput" accept=".json" class="hidden" onchange="handleSingleUserBackupFileSelect(event)">
+
+    <!-- Modal 1: Day Detail Popup Modal -->
+    <div id="dayDetailModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] flex flex-col overflow-hidden">
+            <div class="p-4 sm:p-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-center justify-between">
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold flex items-center gap-2" id="dayDetailTitle">
+                        <i class="fa-solid fa-calendar-day"></i> 휴무 상세 내역
+                    </h3>
+                    <p class="text-xs text-blue-100 mt-0.5" id="dayDetailSubtitle"></p>
+                </div>
+                <button onclick="closeDayDetailModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-1 space-y-2.5" id="dayDetailList"></div>
+            <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-xs text-slate-500" id="dayDetailSummary"></span>
+                <button onclick="closeDayDetailModal()" class="px-4 py-1.5 bg-slate-800 text-white rounded-xl text-xs font-semibold hover:bg-slate-900 transition">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Edit Record Modal -->
+    <div id="editRecordModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-3">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-800">휴무 내역 수정 / 강제 보정</h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="editForm" onsubmit="handleEditSubmit(event)" class="space-y-3 text-xs sm:text-sm">
+                <input type="hidden" id="editRecordId">
+                <input type="hidden" id="editUserId">
+
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">날짜</label>
+                    <input type="date" id="editDate" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">유형/분류</label>
+                    <input type="text" id="editCategory" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">휴무 일수(일)</label>
+                        <input type="number" id="editDays" step="0.125" min="0" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">휴무 시간(h)</label>
+                        <input type="number" id="editHours" step="0.5" min="0" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">사유</label>
+                    <textarea id="editNote" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-300 resize-none"></textarea>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeEditModal()" class="w-1/2 py-2 bg-slate-100 text-slate-600 font-semibold rounded-xl hover:bg-slate-200">취소</button>
+                    <button type="submit" class="w-1/2 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 3: 관리자 마스터 비밀번호 변경 모달 -->
+    <div id="changeAdminPassModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-4">
+            <div class="flex items-center justify-between border-b pb-2">
+                <h3 class="text-base font-bold text-slate-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved text-amber-500"></i> 관리자 비밀번호 변경
+                </h3>
+                <button onclick="closeChangeAdminPassModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form id="changeAdminPassForm" onsubmit="submitChangeAdminPassword(event)" class="space-y-3 text-xs sm:text-sm">
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">현재 관리자 비밀번호</label>
+                    <input type="password" id="curAdminPass" required placeholder="기존 비밀번호 입력" class="w-full px-3 py-2 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">새로운 비밀번호</label>
+                    <input type="password" id="newAdminPass1" required placeholder="새 비밀번호 입력 (4자 이상)" class="w-full px-3 py-2 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">새로운 비밀번호 확인</label>
+                    <input type="password" id="newAdminPass2" required placeholder="새 비밀번호 재입력" class="w-full px-3 py-2 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeChangeAdminPassModal()" class="w-1/2 py-2 bg-slate-100 text-slate-600 font-semibold rounded-xl text-xs hover:bg-slate-200">취소</button>
+                    <button type="submit" class="w-1/2 py-2 bg-amber-600 text-white font-bold rounded-xl text-xs hover:bg-amber-700">변경 저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 4: 관리자 직접 사원 휴무 대리/강제 등록 모달 -->
+    <div id="adminOverrideModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-3">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-pen text-blue-600"></i> 사원 휴무 대리/강제 등록
+                </h3>
+                <button onclick="closeAdminOverrideModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="adminOverrideForm" onsubmit="submitAdminOverrideRecord(event)" class="space-y-2.5 text-xs sm:text-sm">
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">대상 사원 선택</label>
+                    <select id="adminOverrideUserSelect" required class="w-full px-3 py-2 rounded-xl border border-slate-300"></select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">구분</label>
+                    <select id="adminOverrideType" class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                        <option value="earned">발생 (+부여)</option>
+                        <option value="used">사용 (-차감)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">날짜</label>
+                    <input type="date" id="adminOverrideDate" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">유형/분류</label>
+                    <input type="text" id="adminOverrideCategory" placeholder="예: 출장 특근 보정, 대체휴무 부여 등" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">일수(일)</label>
+                        <input type="number" id="adminOverrideDays" step="0.125" min="0" placeholder="1" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">시간(h)</label>
+                        <input type="number" id="adminOverrideHours" step="0.5" min="0" placeholder="8" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">관리자 등록 사유</label>
+                    <textarea id="adminOverrideNote" rows="2" placeholder="관리자 권한 직접 보정 등록 사유 입력" class="w-full px-3 py-2 rounded-xl border border-slate-300 resize-none"></textarea>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeAdminOverrideModal()" class="w-1/2 py-2 bg-slate-100 text-slate-600 font-semibold rounded-xl text-xs hover:bg-slate-200">취소</button>
+                    <button type="submit" class="w-1/2 py-2 bg-blue-600 text-white font-bold rounded-xl text-xs hover:bg-blue-700">강제 등록</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alert / Confirm / Prompt Modal -->
+    <div id="customModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 text-center space-y-3">
+            <h3 class="text-base font-bold text-slate-800" id="modalTitle">알림</h3>
+            <p class="text-xs sm:text-sm text-slate-600 whitespace-pre-line" id="modalMessage">내용</p>
+            <div id="modalPromptContainer" class="hidden">
+                <input type="password" id="modalPromptInput" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="입력하세요">
+            </div>
+            <div class="flex gap-2 justify-center pt-2" id="modalButtons">
+                <button onclick="closeModal()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-blue-700 transition w-full">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div id="qrModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-xs w-full p-5 text-center space-y-3">
+            <h3 class="text-base font-bold text-slate-800">모바일 접속 QR</h3>
+            <div id="qrcode" class="flex justify-center p-2 bg-white border border-slate-200 rounded-xl"></div>
+            <button onclick="closeQRModal()" class="w-full py-2 bg-slate-800 text-white font-semibold text-xs rounded-xl hover:bg-slate-900">닫기</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            sendPasswordResetEmail,
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            getDocs, 
+            addDoc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            query, 
+            orderBy, 
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'dayoff-tracker-prod';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBEOQI0Kc6483Mrw2mWHqLRRJhpDk0E61Q",
+            authDomain: "dayofftracker-1a453.firebaseapp.com",
+            databaseURL: "https://dayofftracker-1a453-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "dayofftracker-1a453",
+            storageBucket: "dayofftracker-1a453.firebasestorage.app",
+            messagingSenderId: "71136470002",
+            appId: "1:71136470002:web:e33bc193c8818db688c16b",
+            measurementId: "G-ZQ36HXLS2Z"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentUserProfile = null;
+        let myRecords = [];
+        let allUsersData = [];
+        let allRecordsData = [];
+        let isAdminMode = false;
+        let isAuthSignUp = false;
+        let unsubscribeMyRecords = null;
+
+        let calculatedDays = 1.5;
+        let calculatedHours = 12;
+
+        let isRangeSelectionMode = false;
+        let tripStartDate = null;
+        let tripEndDate = null;
+        let detectedHolidaysList = [];
+
+        let adminSelectedRecordsToDelete = new Set();
+        let selectedAdminUserId = 'ALL';
+
+        let currentCalYear = new Date().getFullYear();
+        let currentCalMonth = new Date().getMonth();
+        let adminCalYear = new Date().getFullYear();
+        let adminCalMonth = new Date().getMonth();
+
+        // 공휴일 데이터
+        const KOREAN_HOLIDAYS = {
+            fixed: {
+                '01-01': '신정',
+                '03-01': '3·1절',
+                '05-05': '어린이날',
+                '06-06': '현충일',
+                '08-15': '광복절',
+                '10-03': '개천절',
+                '10-09': '한글날',
+                '12-25': '성탄절'
+            },
+            lunarAndSubstitutes: {
+                '2025-01-28': '설날 연휴', '2025-01-29': '설날', '2025-01-30': '설날 연휴', '2025-03-03': '대체공휴일',
+                '2025-05-05': '어린이날', '2025-05-06': '대체공휴일', '2025-10-05': '추석 연휴', '2025-10-06': '추석',
+                '2025-10-07': '추석 연휴', '2025-10-08': '대체공휴일',
+                '2026-02-16': '설날 연휴', '2026-02-17': '설날', '2026-02-18': '설날 연휴', '2026-03-02': '대체공휴일',
+                '2026-05-24': '부처님오신날', '2026-05-25': '대체공휴일', '2026-06-03': '지방선거', '2026-08-17': '대체공휴일',
+                '2026-09-24': '추석 연휴', '2026-09-25': '추석', '2026-09-26': '추석 연휴', '2026-10-05': '대체공휴일'
+            }
+        };
+
+        function getKoreanHoliday(year, month, day) {
+            const mm = String(month).padStart(2, '0');
+            const dd = String(day).padStart(2, '0');
+            const dateStr = `${year}-${mm}-${dd}`;
+            const monthDay = `${mm}-${dd}`;
+            return KOREAN_HOLIDAYS.lunarAndSubstitutes[dateStr] || KOREAN_HOLIDAYS.fixed[monthDay] || null;
+        }
+
+        function isWeekendOrHoliday(dateStr) {
+            const d = new Date(dateStr);
+            const dayOfWeek = d.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) return true;
+            const [y, m, day] = dateStr.split('-');
+            return Boolean(getKoreanHoliday(parseInt(y, 10), parseInt(m, 10), parseInt(day, 10)));
+        }
+
+        // 로딩 세이프가드 (2초 초과 시 자동 해제)
+        let loadingTimer = null;
+        function showLoading(show, text = "처리 중...") {
+            const overlay = document.getElementById('loadingOverlay');
+            if (!overlay) return;
+            if (show) {
+                document.getElementById('loadingText').textContent = text;
+                overlay.classList.remove('hidden');
+                if (loadingTimer) clearTimeout(loadingTimer);
+                loadingTimer = setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 2500);
+            } else {
+                if (loadingTimer) clearTimeout(loadingTimer);
+                overlay.classList.add('hidden');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setupAuthListener();
+            setDefaultDate();
+            document.getElementById('inputDays').value = 1;
+            document.getElementById('inputHours').value = 8;
+            calculateCompensatoryLeave();
+        });
+
+        function setDefaultDate() {
+            document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
+        }
+
+        // ==================== 인증 및 사용자 모드 ====================
+        window.toggleAuthMode = function() {
+            isAuthSignUp = !isAuthSignUp;
+            document.getElementById('authTitle').textContent = isAuthSignUp ? "회원가입" : "로그인";
+            document.getElementById('authSubtitle').textContent = isAuthSignUp ? "가입 신청 후 관리자의 승인이 완료되어야 로그인할 수 있습니다." : "파이어베이스 Cloud에 로그인하여 데이터를 동기화하세요.";
+            document.getElementById('authSubmitBtn').textContent = isAuthSignUp ? "회원가입 신청" : "로그인";
+            document.getElementById('nameGroup').classList.toggle('hidden', !isAuthSignUp);
+            document.getElementById('authName').required = isAuthSignUp;
+            document.getElementById('authToggleText').childNodes[0].nodeValue = isAuthSignUp ? "이미 계정이 있으신가요? " : "계정이 없으신가요? ";
+            document.getElementById('authToggleBtn').textContent = isAuthSignUp ? "로그인" : "회원가입";
+        };
+
+        window.handleAuthSubmit = async function(e) {
+            e.preventDefault();
+            showLoading(true, "인증 정보 처리 중...");
+
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+            const name = document.getElementById('authName').value.trim();
+
+            try {
+                if (isAuthSignUp) {
+                    if (!name) throw new Error("성함을 입력해주세요.");
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    await setDoc(doc(db, `artifacts/${appId}/users`, user.uid), {
+                        uid: user.uid,
+                        name: name,
+                        email: email,
+                        status: 'pending',
+                        createdAt: serverTimestamp()
+                    });
+
+                    await signOut(auth);
+                    showLoading(false);
+                    showAlertModal("가입 신청 완료", "회원가입 신청이 접수되었습니다.\n최고 관리자의 승인이 완료된 후 이용하실 수 있습니다.");
+                    toggleAuthMode();
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (err) {
+                showLoading(false);
+                let msg = err.message;
+                if (err.code === 'auth/user-not-found') msg = "등록되지 않은 이메일입니다.";
+                if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = "이메일 또는 비밀번호가 올바르지 않습니다.";
+                if (err.code === 'auth/email-already-in-use') msg = "이미 등록된 이메일 계정입니다.";
+                showAlertModal("인증 실패", msg);
+            }
+        };
+
+        function setupAuthListener() {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    const userRef = doc(db, `artifacts/${appId}/users`, user.uid);
+                    let userDoc = await getDoc(userRef);
+
+                    // 누락 프로필 방지
+                    if (!userDoc.exists()) {
+                        const fallbackName = prompt("시스템에 등록할 성함(실명)을 입력해주세요:", user.email.split('@')[0]) || user.email.split('@')[0];
+                        await setDoc(userRef, {
+                            uid: user.uid,
+                            name: fallbackName,
+                            email: user.email,
+                            status: 'approved',
+                            createdAt: serverTimestamp()
+                        });
+                        userDoc = await getDoc(userRef);
+                    }
+
+                    currentUserProfile = userDoc.data();
+
+                    if (currentUserProfile.status === 'pending' && !isAdminMode) {
+                        document.getElementById('authSection').classList.add('hidden');
+                        document.getElementById('employeeMainSection').classList.add('hidden');
+                        document.getElementById('pendingApprovalSection').classList.remove('hidden');
+                        document.getElementById('userHeaderControls').classList.remove('hidden');
+                        showLoading(false);
+                        return;
+                    }
+
+                    document.getElementById('authSection').classList.add('hidden');
+                    document.getElementById('pendingApprovalSection').classList.add('hidden');
+                    document.getElementById('employeeMainSection').classList.remove('hidden');
+                    document.getElementById('userHeaderControls').classList.remove('hidden');
+
+                    document.getElementById('welcomeMessage').textContent = `반갑습니다, ${currentUserProfile.name || '사원'}님! 👋`;
+                    listenMyRecords();
+                } else {
+                    currentUser = null;
+                    currentUserProfile = null;
+                    if (unsubscribeMyRecords) unsubscribeMyRecords();
+                    document.getElementById('authSection').classList.remove('hidden');
+                    document.getElementById('pendingApprovalSection').classList.add('hidden');
+                    document.getElementById('employeeMainSection').classList.add('hidden');
+                    document.getElementById('userHeaderControls').classList.add('hidden');
+                }
+                showLoading(false);
+            });
+        }
+
+        window.handleLogout = async function() {
+            showLoading(true, "로그아웃 중...");
+            await signOut(auth);
+            exitAdminMode();
+        };
+
+        window.promptChangeName = function() {
+            if (!currentUser) return;
+            showPromptModal("성함 변경", "변경하실 성함을 입력하세요:", async (newName) => {
+                if (!newName || !newName.trim()) return;
+                showLoading(true, "성함 변경 중...");
+                try {
+                    await updateDoc(doc(db, `artifacts/${appId}/users`, currentUser.uid), { name: newName.trim() });
+                    currentUserProfile.name = newName.trim();
+                    document.getElementById('welcomeMessage').textContent = `반갑습니다, ${currentUserProfile.name}님! 👋`;
+                    showLoading(false);
+                    showAlertModal("완료", "성함이 정상적으로 변경되었습니다.");
+                } catch (e) {
+                    showLoading(false);
+                    showAlertModal("오류", e.message);
+                }
+            }, false, currentUserProfile?.name || '');
+        };
+
+        function listenMyRecords() {
+            if (!currentUser) return;
+            const recordsRef = collection(db, `artifacts/${appId}/users/${currentUser.uid}/leave_records`);
+            const q = query(recordsRef, orderBy('date', 'desc'));
+
+            unsubscribeMyRecords = onSnapshot(q, (snapshot) => {
+                myRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderCalendar();
+                calculateStats();
+            });
+        }
+
+        // ==================== 개인 캘린더 & 출장 계산 ====================
+        function calculateCompensatoryLeave() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const inputH = parseFloat(document.getElementById('inputHours').value) || 0;
+
+            if (type === 'earned') {
+                const daysCount = detectedHolidaysList.length > 0 ? detectedHolidaysList.length : 1;
+                const standardHours = daysCount * 8;
+                if (inputH <= standardHours) {
+                    calculatedHours = inputH * 1.5;
+                } else {
+                    calculatedHours = (standardHours * 1.5) + ((inputH - standardHours) * 2.0);
+                }
+                calculatedDays = calculatedHours / 8;
+                document.getElementById('resultLabel').textContent = "적립될 보상휴가:";
+                document.getElementById('calculatedResultText').className = "font-black text-emerald-600 text-sm";
+                document.getElementById('calculatedResultText').textContent = `+${calculatedDays.toFixed(2).replace(/\.00$/, '')}일 (${calculatedHours}시간)`;
+                document.getElementById('calculationDesc').textContent = `* 근로기준법: 휴일 ${daysCount}일 기준 8h/일 1.5배 가산 적용`;
+            } else {
+                calculatedHours = inputH;
+                calculatedDays = inputH / 8;
+                document.getElementById('resultLabel').textContent = "차감될 사용휴가:";
+                document.getElementById('calculatedResultText').className = "font-black text-rose-600 text-sm";
+                document.getElementById('calculatedResultText').textContent = `-${calculatedDays.toFixed(2).replace(/\.00$/, '')}일 (${calculatedHours}시간)`;
+                document.getElementById('calculationDesc').textContent = "* 보유 잔여 휴무에서 1:1로 차감됩니다.";
+            }
+        }
+
+        window.syncFromInput = function(source) {
+            const daysInput = document.getElementById('inputDays');
+            const hoursInput = document.getElementById('inputHours');
+            if (source === 'days') {
+                hoursInput.value = (parseFloat(daysInput.value) || 0) * 8;
+            } else {
+                daysInput.value = (parseFloat(hoursInput.value) || 0) / 8;
+            }
+            calculateCompensatoryLeave();
+        };
+
+        window.handleTypeChange = function() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            document.getElementById('earnedCategoryContainer').classList.toggle('hidden', type !== 'earned');
+            document.getElementById('usedCategoryContainer').classList.toggle('hidden', type !== 'used');
+            clearRangeSelection();
+            toggleDateSelectionMode(false);
+            calculateCompensatoryLeave();
+        };
+
+        window.handleUsedCategoryChange = function() {
+            const sel = document.getElementById('recordUsedCategory').value;
+            const daysInput = document.getElementById('inputDays');
+            const hoursInput = document.getElementById('inputHours');
+            if (sel.includes('반차')) {
+                daysInput.value = 0.5; hoursInput.value = 4;
+            } else if (sel.includes('외출/조퇴')) {
+                daysInput.value = 0.25; hoursInput.value = 2;
+            } else {
+                daysInput.value = 1; hoursInput.value = 8;
+            }
+            calculateCompensatoryLeave();
+        };
+
+        window.toggleDateSelectionMode = function(forceState) {
+            isRangeSelectionMode = (typeof forceState === 'boolean') ? forceState : !isRangeSelectionMode;
+            document.getElementById('calendarModeBanner').classList.toggle('hidden', !isRangeSelectionMode);
+            document.getElementById('singleDateInputGroup').classList.toggle('hidden', isRangeSelectionMode);
+            document.getElementById('rangeDateDisplayGroup').classList.toggle('hidden', !isRangeSelectionMode);
+            renderCalendar();
+        };
+
+        window.clearRangeSelection = function() {
+            tripStartDate = null; tripEndDate = null; detectedHolidaysList = [];
+            updateRangeUI();
+            renderCalendar();
+        };
+
+        function handleRangeSelection(clickedDateStr) {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            if (!tripStartDate || (tripStartDate && tripEndDate)) {
+                tripStartDate = clickedDateStr; tripEndDate = null; detectedHolidaysList = [];
+            } else {
+                if (clickedDateStr < tripStartDate) {
+                    tripStartDate = clickedDateStr; tripEndDate = null;
+                } else {
+                    tripEndDate = clickedDateStr;
+                    calculateHolidaysInRange(tripStartDate, tripEndDate, type);
+                }
+            }
+            updateRangeUI();
+            renderCalendar();
+        }
+
+        function calculateHolidaysInRange(startStr, endStr, type) {
+            const result = [];
+            const cur = new Date(startStr);
+            const end = new Date(endStr);
+            while (cur <= end) {
+                const y = cur.getFullYear();
+                const m = String(cur.getMonth() + 1).padStart(2, '0');
+                const d = String(cur.getDate()).padStart(2, '0');
+                const dateKey = `${y}-${m}-${d}`;
+                if (type === 'earned') {
+                    if (isWeekendOrHoliday(dateKey)) result.push(dateKey);
+                } else {
+                    result.push(dateKey);
+                }
+                cur.setDate(cur.getDate() + 1);
+            }
+            detectedHolidaysList = result;
+            const count = detectedHolidaysList.length || 1;
+            document.getElementById('inputDays').value = count;
+            document.getElementById('inputHours').value = count * 8;
+            calculateCompensatoryLeave();
+        }
+
+        function updateRangeUI() {
+            document.getElementById('displayStartDate').textContent = tripStartDate || '미선택';
+            document.getElementById('displayEndDate').textContent = tripEndDate || '미선택';
+            document.getElementById('holidayCountBadge').textContent = `포함된 휴일 (토·일·공휴일): ${detectedHolidaysList.length}일`;
+            const container = document.getElementById('rangeHolidaysBadgesContainer');
+            if (detectedHolidaysList.length === 0) {
+                container.innerHTML = `<span class="text-[11px] text-slate-400">기간 내 휴일이 자동 감지되어 휴무로 생성됩니다.</span>`;
+            } else {
+                container.innerHTML = detectedHolidaysList.map(d => `<span class="px-2 py-0.5 rounded bg-emerald-600 text-white text-[11px] font-bold">${d}</span>`).join(' ');
+            }
+        }
+
+        window.changeCalendarMonth = function(delta) {
+            currentCalMonth += delta;
+            if (currentCalMonth < 0) { currentCalMonth = 11; currentCalYear -= 1; }
+            else if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear += 1; }
+            renderCalendar();
+        };
+
+        window.resetCalendarToToday = function() {
+            const today = new Date();
+            currentCalYear = today.getFullYear(); currentCalMonth = today.getMonth();
+            renderCalendar();
+        };
+
+        window.renderCalendar = function() {
+            const grid = document.getElementById('calendarGrid');
+            if (!grid) return;
+            document.getElementById('calendarMonthTitle').textContent = `${currentCalYear}년 ${currentCalMonth + 1}월`;
+
+            const firstDayIndex = new Date(currentCalYear, currentCalMonth, 1).getDay();
+            const lastDate = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            let html = '';
+            for (let i = 0; i < firstDayIndex; i++) {
+                html += `<div class="p-1 min-h-[64px] sm:min-h-[76px] bg-slate-50/50 rounded-xl"></div>`;
+            }
+
+            for (let day = 1; day <= lastDate; day++) {
+                const dateStr = `${currentCalYear}-${String(currentCalMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayOfWeek = new Date(currentCalYear, currentCalMonth, day).getDay();
+                const holidayName = getKoreanHoliday(currentCalYear, currentCalMonth + 1, day);
+                const dayRecords = myRecords.filter(r => r.date === dateStr);
+                const isDetectedHoliday = detectedHolidaysList.includes(dateStr);
+                const isTripStart = (dateStr === tripStartDate);
+                const isTripEnd = (dateStr === tripEndDate);
+
+                let borderClass = 'border-slate-200/80 bg-white';
+                if (isTripStart || isTripEnd) borderClass = 'border-blue-600 ring-2 ring-blue-600 bg-blue-50';
+                else if (isDetectedHoliday) borderClass = 'border-emerald-500 ring-2 ring-emerald-400 bg-emerald-50/80';
+                else if (dateStr === todayStr) borderClass = 'border-blue-500 bg-blue-50/20';
+
+                let numColor = 'text-slate-700';
+                if (dayOfWeek === 0 || holidayName) numColor = 'text-rose-500 font-bold';
+                else if (dayOfWeek === 6) numColor = 'text-blue-500 font-bold';
+
+                html += `
+                    <div onclick="handleCalendarDateClick('${dateStr}')" class="p-1 sm:p-1.5 min-h-[64px] sm:min-h-[76px] rounded-xl border ${borderClass} hover:border-blue-400 transition cursor-pointer flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="${numColor}">${day}</span>
+                                ${holidayName ? `<span class="text-[9px] text-rose-500 font-bold truncate">${holidayName}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="space-y-0.5 mt-1">
+                            ${dayRecords.map(r => `
+                                <div class="px-1 py-0.5 rounded text-[10px] font-black truncate ${r.type === 'earned' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                    ${r.type === 'earned' ? '+' : '-'}${r.days}일
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        };
+
+        window.handleCalendarDateClick = function(dateStr) {
+            if (isRangeSelectionMode) {
+                handleRangeSelection(dateStr);
+            } else {
+                document.getElementById('recordDate').value = dateStr;
+                openDayDetailModal(dateStr, false);
+            }
+        };
+
+        function calculateStats() {
+            let earned = 0, used = 0;
+            myRecords.forEach(r => {
+                const hrs = parseFloat(r.hours) || 0;
+                if (r.type === 'earned') earned += hrs;
+                else used += hrs;
+            });
+            const rem = earned - used;
+            document.getElementById('statEarned').textContent = `${(earned/8).toFixed(1)}일`;
+            document.getElementById('statEarnedHours').textContent = `${earned}시간`;
+            document.getElementById('statUsed').textContent = `${(used/8).toFixed(1)}일`;
+            document.getElementById('statUsedHours').textContent = `${used}시간`;
+            document.getElementById('statRemaining').textContent = `${(rem/8).toFixed(1)}일`;
+            document.getElementById('statRemainingHours').textContent = `${rem}시간`;
+        }
+
+        window.handleRecordSubmit = async function(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const note = document.getElementById('recordNote').value.trim();
+            const category = (type === 'earned') ? "출장 중 주말/공휴일 근무 보상" : document.getElementById('recordUsedCategory').value;
+            const isRangeSelected = (isRangeSelectionMode && detectedHolidaysList.length > 0);
+            const targetDates = isRangeSelected ? [...detectedHolidaysList] : [document.getElementById('recordDate').value];
+
+            if (!targetDates[0]) {
+                showAlertModal("입력 오류", "날짜 또는 출장 기간을 선택하세요.");
+                return;
+            }
+
+            showLoading(true, "클라우드 저장 중...");
+            try {
+                const recordsRef = collection(db, `artifacts/${appId}/users/${currentUser.uid}/leave_records`);
+                const perDayDays = calculatedDays / targetDates.length;
+                const perDayHours = calculatedHours / targetDates.length;
+
+                for (const dateItem of targetDates) {
+                    await addDoc(recordsRef, {
+                        type, date: dateItem, category,
+                        days: parseFloat(perDayDays.toFixed(2)),
+                        hours: parseFloat(perDayHours.toFixed(1)),
+                        note: isRangeSelected ? `[출장: ${tripStartDate}~${tripEndDate}] ${note}` : note,
+                        createdAt: serverTimestamp()
+                    });
+                }
+
+                document.getElementById('recordNote').value = '';
+                toggleDateSelectionMode(false);
+                clearRangeSelection();
+                showLoading(false);
+                showAlertModal("완료", "출장 휴무 내역이 등록되었습니다.");
+            } catch (err) {
+                showLoading(false);
+                showAlertModal("오류", err.message);
+            }
+        };
+
+        // ==================== 최고 관리자 관제 센터 (서브컬렉션 순회 + 수동 새로고침) ====================
+        window.openAdminLoginPrompt = function() {
+            showPromptModal("관리자 인증", "최고 관리자 비밀번호를 입력하세요:", async (pass) => {
+                const savedPass = await getMasterAdminPassword();
+                if (pass === savedPass) {
+                    isAdminMode = true;
+                    document.getElementById('employeeHeader').classList.add('hidden');
+                    document.getElementById('employeeMainSection').classList.add('hidden');
+                    document.getElementById('adminControlCenter').classList.remove('hidden');
+                    refreshAdminData(false);
+                } else {
+                    showAlertModal("인증 실패", "비밀번호가 올바르지 않습니다.");
+                }
+            }, true);
+        };
+
+        window.exitAdminMode = function() {
+            isAdminMode = false;
+            document.getElementById('adminControlCenter').classList.add('hidden');
+            document.getElementById('employeeHeader').classList.remove('hidden');
+            if (currentUserProfile && currentUserProfile.status === 'approved') {
+                document.getElementById('employeeMainSection').classList.remove('hidden');
+            }
+        };
+
+        window.toggleAdminSidebar = function() {
+            document.getElementById('adminSidebar').classList.toggle('-translate-x-full');
+        };
+
+        window.switchAdminView = function(viewKey) {
+            ['members', 'calendar', 'records', 'settings'].forEach(k => {
+                document.getElementById(`adminView-${k}`).classList.toggle('hidden', k !== viewKey);
+                const btn = document.getElementById(`adminNav-${k}`);
+                if (btn) {
+                    btn.className = (k === viewKey)
+                        ? "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-blue-600 text-white shadow-md"
+                        : "w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:bg-slate-800/80 hover:text-slate-100 transition";
+                }
+            });
+            if (window.innerWidth < 1024) {
+                document.getElementById('adminSidebar').classList.add('-translate-x-full');
+            }
+        };
+
+        // 🌟 [안정형 데이터 조회]: 인덱스 에러 없이 각 사원 서브컬렉션을 명시적으로 순회 조회
+        window.refreshAdminData = async function(isUserTriggered = false) {
+            const refreshIcon = document.getElementById('refreshIcon');
+            if (refreshIcon) refreshIcon.classList.add('fa-spin');
+            showLoading(true, "전사 출장 데이터 집계 중...");
+
+            try {
+                // 1. 사원 마스터 목록 조회
+                const usersSnap = await getDocs(collection(db, `artifacts/${appId}/users`));
+                allUsersData = usersSnap.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+
+                // 2. 사원별 출장 휴무 내역 순회 취합
+                allRecordsData = [];
+                for (const u of allUsersData) {
+                    try {
+                        const recSnap = await getDocs(collection(db, `artifacts/${appId}/users/${u.uid}/leave_records`));
+                        recSnap.docs.forEach(rdoc => {
+                            allRecordsData.push({
+                                id: rdoc.id,
+                                userId: u.uid,
+                                userName: u.name || u.email,
+                                ...rdoc.data()
+                            });
+                        });
+                    } catch (e) {
+                        console.warn(`User ${u.uid} load skipped:`, e);
+                    }
+                }
+
+                // 3. 브라우저 메모리 초고속 정렬 (인덱스 불필요)
+                allRecordsData.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+                // 4. UI 갱신
+                updateAdminKPIs();
+                renderMemberManagementTable();
+                renderAdminCalendar();
+                renderAdminRecordsTable();
+                updateAdminUserFilterDropdown();
+
+                const now = new Date();
+                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+                document.getElementById('lastSyncTimeText').textContent = timeStr;
+
+                showLoading(false);
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                if (isUserTriggered) {
+                    showAlertModal("새로고침 완료", `전사 데이터가 최신 상태로 동기화되었습니다. (${timeStr})`);
+                }
+            } catch (err) {
+                showLoading(false);
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                showAlertModal("동기화 오류", err.message);
+            }
+        };
+
+        function updateAdminKPIs() {
+            document.getElementById('kpiTotalUsers').textContent = `${allUsersData.length}명`;
+            const pendingCount = allUsersData.filter(u => u.status === 'pending').length;
+            document.getElementById('kpiPendingUsers').textContent = `${pendingCount}건`;
+            document.getElementById('sidebarPendingBadge').textContent = pendingCount;
+            document.getElementById('sidebarPendingBadge').classList.toggle('hidden', pendingCount === 0);
+            document.getElementById('adminPendingBadgeInside').textContent = `${pendingCount}건`;
+
+            let monthEarned = 0, totalPool = 0;
+            const currentMonthPrefix = `${adminCalYear}-${String(adminCalMonth + 1).padStart(2, '0')}`;
+
+            allRecordsData.forEach(r => {
+                const hrs = parseFloat(r.hours) || 0;
+                if ((r.date || '').startsWith(currentMonthPrefix) && r.type === 'earned') {
+                    monthEarned += hrs;
+                }
+                if (r.type === 'earned') totalPool += hrs;
+                else totalPool -= hrs;
+            });
+
+            document.getElementById('kpiMonthEarned').textContent = `${(monthEarned/8).toFixed(1)}일`;
+            document.getElementById('kpiTotalPool').textContent = `${(totalPool/8).toFixed(1)}일`;
+        }
+
+        function updateAdminUserFilterDropdown() {
+            const select = document.getElementById('adminUserFilterSelect');
+            if (!select) return;
+            const cur = select.value;
+            let opts = `<option value="ALL">전체 사원 전체 보기</option>`;
+            allUsersData.forEach(u => {
+                opts += `<option value="${u.uid}">${u.name || '미설정'} (${u.email})</option>`;
+            });
+            select.innerHTML = opts;
+            select.value = cur || 'ALL';
+        }
+
+        window.renderMemberManagementTable = function() {
+            const search = (document.getElementById('adminMemberSearchInput')?.value || '').toLowerCase().trim();
+            const pendingBody = document.getElementById('adminPendingTableBody');
+            const memberBody = document.getElementById('adminMemberTableBody');
+
+            const pendingUsers = allUsersData.filter(u => u.status === 'pending');
+            if (pendingBody) {
+                pendingBody.innerHTML = (pendingUsers.length === 0)
+                    ? `<tr><td colspan="4" class="p-4 text-center text-slate-500">대기 중인 가입 신청이 없습니다.</td></tr>`
+                    : pendingUsers.map(u => `
+                        <tr>
+                            <td class="p-3 font-bold text-white">${u.name || '-'}</td>
+                            <td class="p-3 text-slate-400">${u.email}</td>
+                            <td class="p-3 text-slate-400">${u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleDateString() : '-'}</td>
+                            <td class="p-3 text-right space-x-1.5">
+                                <button onclick="approveMemberDirect('${u.uid}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition">승인</button>
+                                <button onclick="deleteMemberCompletely('${u.uid}', '${u.name || '사원'}')" class="px-2.5 py-1 bg-rose-900/60 text-rose-300 hover:bg-rose-900 rounded-lg text-xs font-semibold">반려</button>
+                            </td>
+                        </tr>
+                    `).join('');
+            }
+
+            const filteredMembers = allUsersData.filter(u => 
+                (u.name && u.name.toLowerCase().includes(search)) || 
+                (u.email && u.email.toLowerCase().includes(search))
+            );
+
+            if (memberBody) {
+                memberBody.innerHTML = filteredMembers.map(u => {
+                    const recs = allRecordsData.filter(r => r.userId === u.uid);
+                    let earned = 0, used = 0;
+                    recs.forEach(r => {
+                        const hrs = parseFloat(r.hours) || 0;
+                        if (r.type === 'earned') earned += hrs; else used += hrs;
+                    });
+                    const rem = earned - used;
+                    const isApproved = u.status === 'approved';
+
+                    return `
+                        <tr class="hover:bg-slate-800/50 transition">
+                            <td class="p-3 font-bold text-white flex items-center gap-2">
+                                <span>${u.name || '미설정'}</span>
+                                <button onclick="viewUserCalendar('${u.uid}')" class="px-1.5 py-0.5 rounded text-[10px] bg-blue-600/30 text-blue-400 hover:bg-blue-600 hover:text-white font-bold">캘린더</button>
+                            </td>
+                            <td class="p-3 text-slate-400">${u.email}</td>
+                            <td class="p-3">
+                                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${isApproved ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
+                                    ${isApproved ? '정상 승인' : '승인 대기'}
+                                </span>
+                            </td>
+                            <td class="p-3 text-emerald-400 font-bold">${(earned/8).toFixed(1)}일</td>
+                            <td class="p-3 text-rose-400 font-bold">${(used/8).toFixed(1)}일</td>
+                            <td class="p-3 text-blue-400 font-black">${(rem/8).toFixed(1)}일</td>
+                            <td class="p-3 text-right space-x-1 whitespace-nowrap">
+                                <button onclick="exportSingleUserJSON('${u.uid}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-300 rounded text-xs font-semibold" title="개별 백업">백업</button>
+                                <button onclick="triggerSingleUserImportJSON('${u.uid}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs font-semibold mr-1" title="개별 복원">복원</button>
+                                <button onclick="toggleMemberApprovalStatus('${u.uid}', '${u.status || 'approved'}')" class="px-2.5 py-1 rounded text-xs font-semibold ${isApproved ? 'bg-amber-900/40 text-amber-300 hover:bg-amber-900' : 'bg-emerald-600 text-white'}">
+                                    ${isApproved ? '대기전환' : '승인'}
+                                </button>
+                                <button onclick="deleteMemberCompletely('${u.uid}', '${u.name || '사원'}')" class="px-2.5 py-1 bg-rose-900/40 text-rose-300 hover:bg-rose-900 rounded text-xs font-semibold">삭제</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        };
+
+        window.approveMemberDirect = async function(uid) {
+            showLoading(true, "가입 승인 중...");
+            try {
+                await updateDoc(doc(db, `artifacts/${appId}/users`, uid), { status: 'approved' });
+                await refreshAdminData(false);
+                showAlertModal("완료", "사원 가입이 승인되었습니다.");
+            } catch (e) {
+                showLoading(false);
+                showAlertModal("오류", e.message);
+            }
+        };
+
+        window.toggleMemberApprovalStatus = async function(uid, curStatus) {
+            const next = (curStatus === 'approved') ? 'pending' : 'approved';
+            showConfirmModal("상태 변경", `해당 사원의 계정을 [${next === 'approved' ? '승인' : '대기 전환'}] 하시겠습니까?`, async () => {
+                showLoading(true, "상태 변경 중...");
+                try {
+                    await updateDoc(doc(db, `artifacts/${appId}/users`, uid), { status: next });
+                    await refreshAdminData(false);
+                    showAlertModal("완료", "계정 상태가 변경되었습니다.");
+                } catch (e) {
+                    showLoading(false);
+                    showAlertModal("오류", e.message);
+                }
+            });
+        };
+
+        window.deleteMemberCompletely = function(uid, name) {
+            showConfirmModal("사원 삭제", `[${name}] 사원의 모든 데이터(프로필 및 출장 내역)를 영구 삭제하시겠습니까?`, async () => {
+                showLoading(true, "사원 데이터 삭제 중...");
+                try {
+                    const recSnap = await getDocs(collection(db, `artifacts/${appId}/users/${uid}/leave_records`));
+                    for (const d of recSnap.docs) {
+                        await deleteDoc(d.ref);
+                    }
+                    await deleteDoc(doc(db, `artifacts/${appId}/users`, uid));
+                    await refreshAdminData(false);
+                    showAlertModal("완료", "사원 정보가 완전히 삭제되었습니다.");
+                } catch (e) {
+                    showLoading(false);
+                    showAlertModal("오류", e.message);
+                }
+            });
+        };
+
+        window.viewUserCalendar = function(uid) {
+            selectedAdminUserId = uid;
+            const select = document.getElementById('adminUserFilterSelect');
+            if (select) select.value = uid;
+            onAdminUserFilterChange(uid);
+            switchAdminView('calendar');
+        };
+
+        window.onAdminUserFilterChange = function(uid) {
+            selectedAdminUserId = uid;
+            const user = allUsersData.find(u => u.uid === uid);
+            document.getElementById('adminSelectedUserBadge').textContent = (uid === 'ALL') ? "전체 사원 통합 보기" : `${user?.name || '사원'} 님의 캘린더`;
+            renderAdminCalendar();
+            renderAdminRecordsTable();
+        };
+
+        window.changeAdminCalMonth = function(delta) {
+            adminCalMonth += delta;
+            if (adminCalMonth < 0) { adminCalMonth = 11; adminCalYear -= 1; }
+            else if (adminCalMonth > 11) { adminCalMonth = 0; adminCalYear += 1; }
+            renderAdminCalendar();
+            updateAdminKPIs();
+        };
+
+        window.renderAdminCalendar = function() {
+            const grid = document.getElementById('adminCalendarGrid');
+            if (!grid) return;
+            document.getElementById('adminCalMonthTitle').textContent = `${adminCalYear}년 ${adminCalMonth + 1}월`;
+
+            const firstDayIndex = new Date(adminCalYear, adminCalMonth, 1).getDay();
+            const lastDate = new Date(adminCalYear, adminCalMonth + 1, 0).getDate();
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            let targetRecords = allRecordsData;
+            if (selectedAdminUserId !== 'ALL') {
+                targetRecords = allRecordsData.filter(r => r.userId === selectedAdminUserId);
+            }
+
+            let earnedHrs = 0, usedHrs = 0;
+            const monthPrefix = `${adminCalYear}-${String(adminCalMonth + 1).padStart(2, '0')}`;
+            targetRecords.forEach(r => {
+                if ((r.date || '').startsWith(monthPrefix)) {
+                    const hrs = parseFloat(r.hours) || 0;
+                    if (r.type === 'earned') earnedHrs += hrs; else usedHrs += hrs;
+                }
+            });
+            const netHrs = earnedHrs - usedHrs;
+            document.getElementById('adminCalStatEarned').textContent = `발생: ${(earnedHrs/8).toFixed(1)}일`;
+            document.getElementById('adminCalStatUsed').textContent = `사용: ${(usedHrs/8).toFixed(1)}일`;
+            document.getElementById('adminCalStatNet').textContent = `순변동: ${(netHrs/8).toFixed(1)}일`;
+
+            let html = '';
+            for (let i = 0; i < firstDayIndex; i++) {
+                html += `<div class="p-1 min-h-[70px] bg-slate-950/40 rounded-xl"></div>`;
+            }
+
+            for (let day = 1; day <= lastDate; day++) {
+                const dateStr = `${adminCalYear}-${String(adminCalMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const holidayName = getKoreanHoliday(adminCalYear, adminCalMonth + 1, day);
+                const dayRecords = targetRecords.filter(r => r.date === dateStr);
+                const isToday = (dateStr === todayStr);
+
+                html += `
+                    <div onclick="openDayDetailModal('${dateStr}', true)" class="p-1 sm:p-1.5 min-h-[70px] rounded-xl border ${isToday ? 'border-amber-400 bg-amber-500/10' : 'border-slate-800 bg-slate-950/70'} hover:border-amber-400 transition cursor-pointer flex flex-col justify-between">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="${holidayName ? 'text-rose-400 font-bold' : 'text-slate-300'}">${day}</span>
+                            ${holidayName ? `<span class="text-[9px] text-rose-400 truncate">${holidayName}</span>` : ''}
+                        </div>
+                        <div class="space-y-0.5 mt-1">
+                            ${dayRecords.map(r => `
+                                <div class="px-1 py-0.5 rounded text-[10px] font-bold truncate ${r.type === 'earned' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">
+                                    ${selectedAdminUserId === 'ALL' ? r.userName + ' ' : ''}${r.type === 'earned' ? '+' : '-'}${r.days}일
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        };
+
+        window.renderAdminRecordsTable = function() {
+            const tbody = document.getElementById('adminRecordsTableBody');
+            if (!tbody) return;
+
+            let targetRecords = allRecordsData;
+            if (selectedAdminUserId !== 'ALL') {
+                targetRecords = allRecordsData.filter(r => r.userId === selectedAdminUserId);
+            }
+
+            adminSelectedRecordsToDelete.clear();
+            updateAdminDeleteButton();
+
+            tbody.innerHTML = (targetRecords.length === 0)
+                ? `<tr><td colspan="8" class="p-6 text-center text-slate-500">등록된 출장 및 휴무 내역이 없습니다.</td></tr>`
+                : targetRecords.map(r => {
+                    const isEarned = r.type === 'earned';
+                    const key = `${r.id}:::${r.userId}`;
+                    return `
+                        <tr class="hover:bg-slate-800/50 transition">
+                            <td class="p-3 text-center">
+                                <input type="checkbox" onchange="toggleAdminRecordCheck('${key}', this.checked)" class="admin-rec-check w-4 h-4 rounded text-blue-600 bg-slate-950 border-slate-700">
+                            </td>
+                            <td class="p-3 font-bold text-white">${r.userName || '-'}</td>
+                            <td class="p-3">
+                                <span class="px-2 py-0.5 rounded text-[11px] font-bold ${isEarned ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">
+                                    ${isEarned ? '발생' : '사용'}
+                                </span>
+                            </td>
+                            <td class="p-3 text-slate-300 font-medium">${r.date}</td>
+                            <td class="p-3 text-slate-200">${r.category}</td>
+                            <td class="p-3 font-bold ${isEarned ? 'text-emerald-400' : 'text-rose-400'}">
+                                ${isEarned ? '+' : '-'}${r.days}일 (${r.hours}h)
+                            </td>
+                            <td class="p-3 text-slate-400 text-xs max-w-xs truncate">${r.note || '-'}</td>
+                            <td class="p-3 text-right">
+                                <button onclick="openEditModal('${r.id}', '${r.userId}')" class="px-2.5 py-1 bg-blue-600/30 text-blue-400 hover:bg-blue-600 hover:text-white rounded text-xs font-bold mr-1">수정</button>
+                                <button onclick="deleteSingleRecordAdmin('${r.id}', '${r.userId}')" class="px-2.5 py-1 bg-rose-900/40 text-rose-300 hover:bg-rose-900 rounded text-xs font-bold">삭제</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+        };
+
+        window.toggleAdminRecordCheck = function(key, isChecked) {
+            if (isChecked) adminSelectedRecordsToDelete.add(key);
+            else adminSelectedRecordsToDelete.delete(key);
+            updateAdminDeleteButton();
+        };
+
+        window.toggleSelectAllAdminRecords = function(isChecked) {
+            document.querySelectorAll('.admin-rec-check').forEach(cb => cb.checked = isChecked);
+            let targetRecords = allRecordsData;
+            if (selectedAdminUserId !== 'ALL') {
+                targetRecords = allRecordsData.filter(r => r.userId === selectedAdminUserId);
+            }
+            if (isChecked) {
+                targetRecords.forEach(r => adminSelectedRecordsToDelete.add(`${r.id}:::${r.userId}`));
+            } else {
+                adminSelectedRecordsToDelete.clear();
+            }
+            updateAdminDeleteButton();
+        };
+
+        function updateAdminDeleteButton() {
+            const count = adminSelectedRecordsToDelete.size;
+            document.getElementById('adminDeleteCountBadge').textContent = count;
+            const btn = document.getElementById('adminBatchDeleteBtn');
+            btn.disabled = (count === 0);
+        }
+
+        window.deleteSelectedAdminRecords = function() {
+            const count = adminSelectedRecordsToDelete.size;
+            if (count === 0) return;
+            showConfirmModal("일괄 삭제", `선택한 ${count}개의 내역을 영구 삭제하시겠습니까?`, async () => {
+                showLoading(true, "내역 일괄 삭제 중...");
+                try {
+                    for (const key of adminSelectedRecordsToDelete) {
+                        const [recId, uid] = key.split(':::');
+                        await deleteDoc(doc(db, `artifacts/${appId}/users/${uid}/leave_records`, recId));
+                    }
+                    await refreshAdminData(false);
+                    showAlertModal("완료", "선택한 내역이 삭제되었습니다.");
+                } catch (e) {
+                    showLoading(false);
+                    showAlertModal("오류", e.message);
+                }
+            });
+        };
+
+        window.deleteSingleRecordAdmin = function(recId, uid) {
+            showConfirmModal("삭제 확인", "해당 내역을 삭제하시겠습니까?", async () => {
+                showLoading(true, "삭제 중...");
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/users/${uid}/leave_records`, recId));
+                    await refreshAdminData(false);
+                    showAlertModal("완료", "내역이 삭제되었습니다.");
+                } catch (e) {
+                    showLoading(false);
+                    showAlertModal("오류", e.message);
+                }
+            });
+        };
+
+        // ==================== 관리자 대리 강제 등록 ====================
+        window.openAdminOverrideModal = function() {
+            const select = document.getElementById('adminOverrideUserSelect');
+            select.innerHTML = allUsersData.map(u => `<option value="${u.uid}">${u.name || '미설정'} (${u.email})</option>`).join('');
+            document.getElementById('adminOverrideDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('adminOverrideModal').classList.remove('hidden');
+        };
+
+        window.closeAdminOverrideModal = function() {
+            document.getElementById('adminOverrideModal').classList.add('hidden');
+        };
+
+        window.submitAdminOverrideRecord = async function(e) {
+            e.preventDefault();
+            const targetUid = document.getElementById('adminOverrideUserSelect').value;
+            const type = document.getElementById('adminOverrideType').value;
+            const date = document.getElementById('adminOverrideDate').value;
+            const category = document.getElementById('adminOverrideCategory').value.trim();
+            const days = parseFloat(document.getElementById('adminOverrideDays').value) || 0;
+            const hours = parseFloat(document.getElementById('adminOverrideHours').value) || 0;
+            const note = document.getElementById('adminOverrideNote').value.trim();
+
+            showLoading(true, "강제 등록 중...");
+            try {
+                await addDoc(collection(db, `artifacts/${appId}/users/${targetUid}/leave_records`), {
+                    type, date, category, days, hours,
+                    note: `[관리자 대리등록] ${note}`,
+                    createdAt: serverTimestamp()
+                });
+                closeAdminOverrideModal();
+                await refreshAdminData(false);
+                showAlertModal("완료", "사원 휴무가 등록되었습니다.");
+            } catch (err) {
+                showLoading(false);
+                showAlertModal("오류", err.message);
+            }
+        };
+
+        // ==================== 백업 & 복원 (JSON) ====================
+        window.exportBackupJSON = async function() {
+            showLoading(true, "전체 백업 데이터 추출 중...");
+            try {
+                const backupData = {
+                    version: "3.0",
+                    exportDate: new Date().toISOString(),
+                    users: []
+                };
+                for (const u of allUsersData) {
+                    const recSnap = await getDocs(collection(db, `artifacts/${appId}/users/${u.uid}/leave_records`));
+                    const records = recSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    backupData.users.push({ uid: u.uid, profile: u, records });
+                }
+                downloadJSON(backupData, `TripSystem_FullBackup_${new Date().toISOString().split('T')[0]}.json`);
+                showLoading(false);
+                showAlertModal("완료", "전체 데이터 백업 파일이 저장되었습니다.");
+            } catch (e) {
+                showLoading(false);
+                showAlertModal("오류", e.message);
+            }
+        };
+
+        window.exportSingleUserJSON = async function(uid) {
+            showLoading(true, "개별 사원 백업 중...");
+            try {
+                const u = allUsersData.find(x => x.uid === uid);
+                const recSnap = await getDocs(collection(db, `artifacts/${appId}/users/${uid}/leave_records`));
+                const records = recSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                const singleBackup = { version: "3.0", type: "single_user", user: { uid, profile: u, records } };
+                downloadJSON(singleBackup, `${u?.name || uid}_휴무백업_${new Date().toISOString().split('T')[0]}.json`);
+                showLoading(false);
+                showAlertModal("완료", "사원 개별 백업 파일이 다운로드되었습니다.");
+            } catch (e) {
+                showLoading(false);
+                showAlertModal("오류", e.message);
+            }
+        };
+
+        function downloadJSON(obj, filename) {
+            const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        window.triggerImportJSON = function(mode) {
+            document.getElementById('globalBackupFileInput').click();
+        };
+
+        window.handleGlobalBackupFileSelect = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    if (!data.users || !Array.isArray(data.users)) throw new Error("올바른 백업 파일이 아닙니다.");
+                    showConfirmModal("전체 복원", `총 ${data.users.length}명의 데이터를 복원하시겠습니까?`, async () => {
+                        showLoading(true, "클라우드 데이터 복원 중...");
+                        for (const uObj of data.users) {
+                            if (uObj.profile) {
+                                await setDoc(doc(db, `artifacts/${appId}/users`, uObj.uid), uObj.profile, { merge: true });
+                            }
+                            if (Array.isArray(uObj.records)) {
+                                for (const r of uObj.records) {
+                                    const rData = { ...r };
+                                    delete rData.id;
+                                    await setDoc(doc(db, `artifacts/${appId}/users/${uObj.uid}/leave_records`, r.id), rData, { merge: true });
+                                }
+                            }
+                        }
+                        await refreshAdminData(false);
+                        showAlertModal("완료", "전체 데이터 복원이 완료되었습니다.");
+                    });
+                } catch (err) {
+                    showAlertModal("파일 오류", err.message);
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        };
+
+        let targetSingleUid = null;
+        window.triggerSingleUserImportJSON = function(uid) {
+            targetSingleUid = uid;
+            document.getElementById('singleUserBackupFileInput').click();
+        };
+
+        window.handleSingleUserBackupFileSelect = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    if (!data.user || !data.user.records) throw new Error("올바른 사원 백업 파일이 아닙니다.");
+                    showConfirmModal("개별 복원", "선택한 사원의 데이터를 복원하시겠습니까?", async () => {
+                        showLoading(true, "사원 데이터 복원 중...");
+                        const uid = targetSingleUid || data.user.uid;
+                        for (const r of data.user.records) {
+                            const rData = { ...r };
+                            delete rData.id;
+                            await setDoc(doc(db, `artifacts/${appId}/users/${uid}/leave_records`, r.id), rData, { merge: true });
+                        }
+                        await refreshAdminData(false);
+                        showAlertModal("완료", "사원 데이터가 성공적으로 복원되었습니다.");
+                    });
+                } catch (err) {
+                    showAlertModal("파일 오류", err.message);
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        };
+
+        // ==================== 정식 엑셀 (.xlsx) 내보내기 ====================
+        window.exportToStyledExcel = function() {
+            const recordsToExport = isAdminMode 
+                ? (selectedAdminUserId === 'ALL' ? allRecordsData : allRecordsData.filter(r => r.userId === selectedAdminUserId))
+                : myRecords;
+
+            if (recordsToExport.length === 0) {
+                showAlertModal("알림", "내보낼 데이터가 없습니다.");
+                return;
+            }
+
+            const title = isAdminMode ? "전사 출장 및 보상휴가 관리 보고서" : `${currentUserProfile?.name || '사원'} 출장 관리 보고서`;
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            let earned = 0, used = 0;
+            recordsToExport.forEach(r => {
+                const hrs = parseFloat(r.hours) || 0;
+                if (r.type === 'earned') earned += hrs; else used += hrs;
+            });
+
+            const sheetData = [
+                [title],
+                [`출력일자: ${todayStr}`, "", "", "", "", "시스템: 출장 체크 시스템"],
+                [],
+                ["[누적 요약]", "총 발생", `${(earned/8).toFixed(1)}일 (${earned}시간)`, "총 사용", `${(used/8).toFixed(1)}일 (${used}시간)`, "잔여 보유", `${((earned-used)/8).toFixed(1)}일 (${earned-used}시간)`],
+                [],
+                ["구분", "사원명", "날짜", "유형/분류", "일수", "시간(h)", "출장지 및 상세 사유"]
+            ];
+
+            recordsToExport.forEach(r => {
+                sheetData.push([
+                    r.type === 'earned' ? "발생 (+)" : "사용 (-)",
+                    r.userName || currentUserProfile?.name || '사원',
+                    r.date || '',
+                    r.category || '',
+                    `${r.type === 'earned' ? '+' : '-'}${r.days || 0}일`,
+                    r.hours || 0,
+                    r.note || '-'
+                ]);
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(sheetData);
+            ws['!cols'] = [{ wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 25 }, { wch: 12 }, { wch: 10 }, { wch: 45 }];
+            XLSX.utils.book_append_sheet(wb, ws, "출장휴무내역");
+            XLSX.writeFile(wb, `출장체크_보고서_${todayStr}.xlsx`);
+        };
+
+        // ==================== 관리자 비밀번호 관리 ====================
+        async function getMasterAdminPassword() {
+            try {
+                const configDoc = await getDoc(doc(db, `artifacts/${appId}/config`, 'admin'));
+                if (configDoc.exists() && configDoc.data().password) {
+                    return configDoc.data().password;
+                }
+            } catch (e) {}
+            return localStorage.getItem('admin_master_pass') || '2026admin!';
+        }
+
+        window.openChangeAdminPassModal = function() {
+            document.getElementById('curAdminPass').value = '';
+            document.getElementById('newAdminPass1').value = '';
+            document.getElementById('newAdminPass2').value = '';
+            document.getElementById('changeAdminPassModal').classList.remove('hidden');
+        };
+
+        window.closeChangeAdminPassModal = function() {
+            document.getElementById('changeAdminPassModal').classList.add('hidden');
+        };
+
+        window.submitChangeAdminPassword = async function(e) {
+            e.preventDefault();
+            const cur = document.getElementById('curAdminPass').value;
+            const n1 = document.getElementById('newAdminPass1').value;
+            const n2 = document.getElementById('newAdminPass2').value;
+
+            const saved = await getMasterAdminPassword();
+            if (cur !== saved) {
+                showAlertModal("오류", "현재 관리자 비밀번호가 일치하지 않습니다.");
+                return;
+            }
+            if (n1.length < 4 || n1 !== n2) {
+                showAlertModal("오류", "새 비밀번호가 4자 이상이거나 서로 일치하지 않습니다.");
+                return;
+            }
+
+            showLoading(true, "비밀번호 변경 중...");
+            try {
+                localStorage.setItem('admin_master_pass', n1);
+                await setDoc(doc(db, `artifacts/${appId}/config`, 'admin'), {
+                    password: n1,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+                closeChangeAdminPassModal();
+                showLoading(false);
+                showAlertModal("완료", "관리자 비밀번호가 변경되었습니다.");
+            } catch (err) {
+                showLoading(false);
+                showAlertModal("오류", err.message);
+            }
+        };
+
+        // ==================== 모달 헬퍼 ====================
+        window.openDayDetailModal = function(dateStr, isAdminView = false) {
+            let records = isAdminView
+                ? (selectedAdminUserId === 'ALL' ? allRecordsData.filter(r => r.date === dateStr) : allRecordsData.filter(r => r.date === dateStr && r.userId === selectedAdminUserId))
+                : myRecords.filter(r => r.date === dateStr);
+
+            const holiday = getKoreanHoliday(...dateStr.split('-').map(Number));
+            document.getElementById('dayDetailTitle').innerHTML = `<i class="fa-solid fa-calendar-day"></i> ${dateStr} ${holiday ? '(' + holiday + ')' : ''}`;
+            document.getElementById('dayDetailSubtitle').textContent = `총 ${records.length}건의 등록 내역`;
+
+            const list = document.getElementById('dayDetailList');
+            if (records.length === 0) {
+                list.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs sm:text-sm">등록된 내역이 없습니다.</div>`;
+            } else {
+                list.innerHTML = records.map(r => `
+                    <div class="p-3 bg-slate-50 border rounded-xl text-xs space-y-1">
+                        <div class="flex items-center justify-between font-bold">
+                            <span>${r.userName ? r.userName + ' - ' : ''}${r.category}</span>
+                            <span class="${r.type === 'earned' ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${r.type === 'earned' ? '+' : '-'}${r.days}일 (${r.hours}h)
+                            </span>
+                        </div>
+                        <p class="text-slate-500 text-[11px]">${r.note || '사유 없음'}</p>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('dayDetailModal').classList.remove('hidden');
+        };
+
+        window.closeDayDetailModal = function() {
+            document.getElementById('dayDetailModal').classList.add('hidden');
+        };
+
+        window.openEditModal = function(recId, uid) {
+            const list = isAdminMode ? allRecordsData : myRecords;
+            const r = list.find(x => x.id === recId);
+            if (!r) return;
+            document.getElementById('editRecordId').value = r.id;
+            document.getElementById('editUserId').value = uid;
+            document.getElementById('editDate').value = r.date;
+            document.getElementById('editCategory').value = r.category;
+            document.getElementById('editDays').value = r.days;
+            document.getElementById('editHours').value = r.hours;
+            document.getElementById('editNote').value = r.note || '';
+            document.getElementById('editRecordModal').classList.remove('hidden');
+        };
+
+        window.closeEditModal = function() {
+            document.getElementById('editRecordModal').classList.add('hidden');
+        };
+
+        window.handleEditSubmit = async function(e) {
+            e.preventDefault();
+            const recId = document.getElementById('editRecordId').value;
+            const uid = document.getElementById('editUserId').value;
+            showLoading(true, "수정 저장 중...");
+            try {
+                await updateDoc(doc(db, `artifacts/${appId}/users/${uid}/leave_records`, recId), {
+                    date: document.getElementById('editDate').value,
+                    category: document.getElementById('editCategory').value,
+                    days: parseFloat(document.getElementById('editDays').value),
+                    hours: parseFloat(document.getElementById('editHours').value),
+                    note: document.getElementById('editNote').value.trim()
+                });
+                closeEditModal();
+                if (isAdminMode) await refreshAdminData(false);
+                showLoading(false);
+                showAlertModal("완료", "수정되었습니다.");
+            } catch (err) {
+                showLoading(false);
+                showAlertModal("오류", err.message);
+            }
+        };
+
+        window.openQRModal = function() {
+            const qr = document.getElementById('qrcode');
+            qr.innerHTML = '';
+            new QRCode(qr, { text: window.location.href, width: 160, height: 160 });
+            document.getElementById('qrModal').classList.remove('hidden');
+        };
+
+        window.closeQRModal = function() {
+            document.getElementById('qrModal').classList.add('hidden');
+        };
+
+        window.showAlertModal = function(title, msg) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = msg;
+            document.getElementById('modalPromptContainer').classList.add('hidden');
+            document.getElementById('modalButtons').innerHTML = `<button onclick="closeModal()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-semibold w-full">확인</button>`;
+            document.getElementById('customModal').classList.remove('hidden');
+        };
+
+        function showConfirmModal(title, msg, onConfirm) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = msg;
+            document.getElementById('modalPromptContainer').classList.add('hidden');
+            document.getElementById('modalButtons').innerHTML = `
+                <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs sm:text-sm font-semibold w-1/2">취소</button>
+                <button id="modalConfirmBtn" class="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs sm:text-sm font-semibold w-1/2">확인</button>
+            `;
+            document.getElementById('modalConfirmBtn').onclick = () => { closeModal(); onConfirm(); };
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function showPromptModal(title, msg, onSubmit, isPassword = true, defaultVal = '') {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = msg;
+            const container = document.getElementById('modalPromptContainer');
+            const input = document.getElementById('modalPromptInput');
+            container.classList.remove('hidden');
+            input.value = defaultVal;
+            input.type = isPassword ? 'password' : 'text';
+
+            document.getElementById('modalButtons').innerHTML = `
+                <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs sm:text-sm font-semibold w-1/2">취소</button>
+                <button id="modalPromptSubmitBtn" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-semibold w-1/2">확인</button>
+            `;
+            document.getElementById('modalPromptSubmitBtn').onclick = () => {
+                const val = input.value;
+                closeModal();
+                onSubmit(val);
+            };
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        window.closeModal = function() {
+            document.getElementById('customModal').classList.add('hidden');
+        };
+    </script>
+</body>
+</html>
