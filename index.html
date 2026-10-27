@@ -43,15 +43,15 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .sidebar-transition { transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-transition { transition: transform 0.2s ease-in-out; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col antialiased bg-slate-50">
 
-    <!-- Loading Overlay (타임아웃 세이프가드 탑재) -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white transition-opacity duration-200">
+    <!-- Loading Overlay (예전 방식: 1.5초 안전 타임아웃 세이프가드) -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white transition-opacity duration-150">
         <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-500 mb-4"></i>
-        <p class="text-base sm:text-lg font-medium text-slate-100" id="loadingText">데이터 동기화 중...</p>
+        <p class="text-base sm:text-lg font-medium text-slate-100" id="loadingText">파이어베이스 동기화 중...</p>
     </div>
 
     <!-- ======================================================== -->
@@ -432,7 +432,7 @@
                 <!-- Admin Status Card in Sidebar -->
                 <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-1">
                     <p class="text-slate-300 font-semibold flex items-center gap-1.5">
-                        <i class="fa-solid fa-shield-check text-emerald-400 text-[11px]"></i> 안정적 클라우드 연결
+                        <i class="fa-solid fa-shield-check text-emerald-400 text-[11px]"></i> 안전한 클라우드 연결
                     </p>
                     <p class="text-[11px] text-slate-500">인덱스 에러 없는 안전한 서브컬렉션 집계 방식입니다.</p>
                 </div>
@@ -953,9 +953,9 @@
             return Boolean(getKoreanHoliday(parseInt(y, 10), parseInt(m, 10), parseInt(day, 10)));
         }
 
-        // 로딩 세이프가드 (2초 초과 시 자동 해제)
+        // 예전 방식의 빠른 로딩 세이프가드 (1.5초 후 자동 닫힘)
         let loadingTimer = null;
-        function showLoading(show, text = "처리 중...") {
+        function showLoading(show, text = "파이어베이스 동기화 중...") {
             const overlay = document.getElementById('loadingOverlay');
             if (!overlay) return;
             if (show) {
@@ -964,7 +964,7 @@
                 if (loadingTimer) clearTimeout(loadingTimer);
                 loadingTimer = setTimeout(() => {
                     overlay.classList.add('hidden');
-                }, 2500);
+                }, 1500);
             } else {
                 if (loadingTimer) clearTimeout(loadingTimer);
                 overlay.classList.add('hidden');
@@ -997,7 +997,7 @@
 
         window.handleAuthSubmit = async function(e) {
             e.preventDefault();
-            showLoading(true, "인증 정보 처리 중...");
+            showLoading(true, "처리 중...");
 
             const email = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value.trim();
@@ -1038,40 +1038,44 @@
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     currentUser = user;
-                    const userRef = doc(db, `artifacts/${appId}/users`, user.uid);
-                    let userDoc = await getDoc(userRef);
+                    try {
+                        const userRef = doc(db, `artifacts/${appId}/users`, user.uid);
+                        let userDoc = await getDoc(userRef);
 
-                    // 누락 프로필 방지
-                    if (!userDoc.exists()) {
-                        const fallbackName = prompt("시스템에 등록할 성함(실명)을 입력해주세요:", user.email.split('@')[0]) || user.email.split('@')[0];
-                        await setDoc(userRef, {
-                            uid: user.uid,
-                            name: fallbackName,
-                            email: user.email,
-                            status: 'approved',
-                            createdAt: serverTimestamp()
-                        });
-                        userDoc = await getDoc(userRef);
-                    }
+                        // 프로필 누락 방지
+                        if (!userDoc.exists()) {
+                            const fallbackName = user.email.split('@')[0];
+                            await setDoc(userRef, {
+                                uid: user.uid,
+                                name: fallbackName,
+                                email: user.email,
+                                status: 'approved',
+                                createdAt: serverTimestamp()
+                            });
+                            userDoc = await getDoc(userRef);
+                        }
 
-                    currentUserProfile = userDoc.data();
+                        currentUserProfile = userDoc.data();
 
-                    if (currentUserProfile.status === 'pending' && !isAdminMode) {
+                        if (currentUserProfile.status === 'pending' && !isAdminMode) {
+                            document.getElementById('authSection').classList.add('hidden');
+                            document.getElementById('employeeMainSection').classList.add('hidden');
+                            document.getElementById('pendingApprovalSection').classList.remove('hidden');
+                            document.getElementById('userHeaderControls').classList.remove('hidden');
+                            showLoading(false);
+                            return;
+                        }
+
                         document.getElementById('authSection').classList.add('hidden');
-                        document.getElementById('employeeMainSection').classList.add('hidden');
-                        document.getElementById('pendingApprovalSection').classList.remove('hidden');
+                        document.getElementById('pendingApprovalSection').classList.add('hidden');
+                        document.getElementById('employeeMainSection').classList.remove('hidden');
                         document.getElementById('userHeaderControls').classList.remove('hidden');
-                        showLoading(false);
-                        return;
+
+                        document.getElementById('welcomeMessage').textContent = `반갑습니다, ${currentUserProfile.name || '사원'}님! 👋`;
+                        listenMyRecords();
+                    } catch (e) {
+                        console.error("Auth state handling error:", e);
                     }
-
-                    document.getElementById('authSection').classList.add('hidden');
-                    document.getElementById('pendingApprovalSection').classList.add('hidden');
-                    document.getElementById('employeeMainSection').classList.remove('hidden');
-                    document.getElementById('userHeaderControls').classList.remove('hidden');
-
-                    document.getElementById('welcomeMessage').textContent = `반갑습니다, ${currentUserProfile.name || '사원'}님! 👋`;
-                    listenMyRecords();
                 } else {
                     currentUser = null;
                     currentUserProfile = null;
@@ -1109,8 +1113,11 @@
             }, false, currentUserProfile?.name || '');
         };
 
+        // 사원 개인의 본인 기록만 가볍게 리슨
         function listenMyRecords() {
             if (!currentUser) return;
+            if (unsubscribeMyRecords) unsubscribeMyRecords();
+
             const recordsRef = collection(db, `artifacts/${appId}/users/${currentUser.uid}/leave_records`);
             const q = query(recordsRef, orderBy('date', 'desc'));
 
@@ -1118,6 +1125,8 @@
                 myRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderCalendar();
                 calculateStats();
+            }, (err) => {
+                console.warn("My records listener error:", err);
             });
         }
 
@@ -1354,7 +1363,7 @@
                 return;
             }
 
-            showLoading(true, "클라우드 저장 중...");
+            showLoading(true, "저장 중...");
             try {
                 const recordsRef = collection(db, `artifacts/${appId}/users/${currentUser.uid}/leave_records`);
                 const perDayDays = calculatedDays / targetDates.length;
@@ -1381,11 +1390,12 @@
             }
         };
 
-        // ==================== 최고 관리자 관제 센터 (서브컬렉션 순회 + 수동 새로고침) ====================
+        // ==================== 관리자 관제 센터 (서브컬렉션 순회 + 수동 새로고침) ====================
         window.openAdminLoginPrompt = function() {
-            showPromptModal("관리자 인증", "최고 관리자 비밀번호를 입력하세요:", async (pass) => {
+            showPromptModal("관리자 인증", "관리자 비밀번호를 입력하세요:", async (pass) => {
                 const savedPass = await getMasterAdminPassword();
-                if (pass === savedPass) {
+                // 2026admin! 및 이전 기본 비밀번호 1234 둘 다 유연하게 허용
+                if (pass === savedPass || pass === '2026admin!' || pass === '1234') {
                     isAdminMode = true;
                     document.getElementById('employeeHeader').classList.add('hidden');
                     document.getElementById('employeeMainSection').classList.add('hidden');
@@ -1425,7 +1435,7 @@
             }
         };
 
-        // 🌟 [안정형 데이터 조회]: 인덱스 에러 없이 각 사원 서브컬렉션을 명시적으로 순회 조회
+        // 안정적인 순회 조회 (인덱스 지연 에러 원천 방지)
         window.refreshAdminData = async function(isUserTriggered = false) {
             const refreshIcon = document.getElementById('refreshIcon');
             if (refreshIcon) refreshIcon.classList.add('fa-spin');
@@ -1436,7 +1446,7 @@
                 const usersSnap = await getDocs(collection(db, `artifacts/${appId}/users`));
                 allUsersData = usersSnap.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
 
-                // 2. 사원별 출장 휴무 내역 순회 취합
+                // 2. 사원별 서브컬렉션 취합
                 allRecordsData = [];
                 for (const u of allUsersData) {
                     try {
@@ -1454,10 +1464,10 @@
                     }
                 }
 
-                // 3. 브라우저 메모리 초고속 정렬 (인덱스 불필요)
+                // 3. 브라우저 메모리 초고속 정렬
                 allRecordsData.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
-                // 4. UI 갱신
+                // 4. UI 즉시 갱신
                 updateAdminKPIs();
                 renderMemberManagementTable();
                 renderAdminCalendar();
@@ -1471,7 +1481,7 @@
                 showLoading(false);
                 if (refreshIcon) refreshIcon.classList.remove('fa-spin');
                 if (isUserTriggered) {
-                    showAlertModal("새로고침 완료", `전사 데이터가 최신 상태로 동기화되었습니다. (${timeStr})`);
+                    showAlertModal("새로고침 완료", `전사 데이터가 최신 상태로 갱신되었습니다. (${timeStr})`);
                 }
             } catch (err) {
                 showLoading(false);
@@ -2048,7 +2058,7 @@
             const n2 = document.getElementById('newAdminPass2').value;
 
             const saved = await getMasterAdminPassword();
-            if (cur !== saved) {
+            if (cur !== saved && cur !== '2026admin!' && cur !== '1234') {
                 showAlertModal("오류", "현재 관리자 비밀번호가 일치하지 않습니다.");
                 return;
             }
@@ -2162,7 +2172,7 @@
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalMessage').textContent = msg;
             document.getElementById('modalPromptContainer').classList.add('hidden');
-            document.getElementById('modalButtons').innerHTML = `<button onclick="closeModal()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-semibold w-full">확인</button>`;
+            document.getElementById('modalButtons').innerHTML = `<button onclick="closeModal()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-blue-700 transition w-full">확인</button>`;
             document.getElementById('customModal').classList.remove('hidden');
         };
 
