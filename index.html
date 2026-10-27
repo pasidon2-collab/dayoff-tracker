@@ -9,10 +9,10 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Noto Sans KR -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- SheetJS (정식 .xlsx 엑셀 생성 라이브러리) -->
+    <!-- SheetJS (Excel .xlsx Export) -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
     <script>
@@ -24,11 +24,12 @@
                     },
                     colors: {
                         brand: {
-                            50: '#f0f7ff',
-                            100: '#e0effe',
+                            50: '#eff6ff',
+                            100: '#dbeafe',
                             500: '#3b82f6',
                             600: '#2563eb',
                             700: '#1d4ed8',
+                            900: '#1e3a8a'
                         }
                     }
                 }
@@ -42,22 +43,25 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .sidebar-transition { transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col antialiased">
+<body class="text-slate-800 min-h-screen flex flex-col antialiased bg-slate-50">
 
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white transition-opacity duration-300">
-        <i class="fa-solid font-sharp fa-circle-notch fa-spin text-5xl text-blue-500 mb-4"></i>
-        <p class="text-base sm:text-lg font-medium text-slate-100" id="loadingText">파이어베이스 실시간 동기화 중...</p>
+        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-500 mb-4"></i>
+        <p class="text-base sm:text-lg font-medium text-slate-100" id="loadingText">클라우드 실시간 동기화 중...</p>
     </div>
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <!-- ======================================================== -->
+    <!-- 1. GENERAL EMPLOYEE TOP HEADER (관리자 모드 시 완전 숨김) -->
+    <!-- ======================================================== -->
+    <header id="employeeHeader" class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-                <div class="bg-blue-600 text-white p-2 sm:p-2.5 rounded-xl shadow-md shadow-blue-500/20">
-                    <i class="fa-solid fa-plane-departure text-lg sm:text-xl"></i>
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white p-2.5 rounded-xl shadow-md shadow-blue-500/20">
+                    <i class="fa-solid fa-plane-departure text-xl"></i>
                 </div>
                 <div>
                     <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">출장 체크 시스템</h1>
@@ -66,16 +70,16 @@
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
-                <button id="adminToggleBtn" onclick="toggleAdminMode()" class="px-2.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-user-shield text-amber-500" id="adminIcon"></i>
-                    <span id="adminBtnText">관리자 로그인</span>
+                <button id="adminLoginBtn" onclick="openAdminLoginPrompt()" class="px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-shield-halved text-amber-500"></i>
+                    <span>관리자 관제 센터</span>
                 </button>
 
                 <div id="userHeaderControls" class="hidden flex items-center gap-1.5 sm:gap-2 border-l border-slate-200 pl-2 sm:pl-3">
-                    <button onclick="openQRModal()" class="p-1.5 sm:p-2 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition" title="모바일 공유 QR">
-                        <i class="fa-solid fa-qrcode text-base sm:text-lg"></i>
+                    <button onclick="openQRModal()" class="p-2 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition" title="모바일 공유 QR">
+                        <i class="fa-solid fa-qrcode text-lg"></i>
                     </button>
-                    <button onclick="handleLogout()" class="px-2.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition flex items-center gap-1">
+                    <button onclick="handleLogout()" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition flex items-center gap-1">
                         <i class="fa-solid fa-right-from-bracket"></i>
                         <span class="hidden sm:inline">로그아웃</span>
                     </button>
@@ -84,34 +88,36 @@
         </div>
     </header>
 
-    <!-- Authentication Section -->
-    <div id="authSection" class="max-w-md mx-auto my-8 sm:my-12 px-4 w-full">
+    <!-- ======================================================== -->
+    <!-- 2. AUTHENTICATION SECTION (로그인 / 회원가입)            -->
+    <!-- ======================================================== -->
+    <div id="authSection" class="max-w-md mx-auto my-12 px-4 w-full">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 sm:p-8">
             <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
                     <i class="fa-solid fa-cloud text-2xl"></i>
                 </div>
-                <h2 class="text-xl sm:text-2xl font-bold text-slate-800" id="authTitle">로그인</h2>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-800" id="authTitle">로그인</h2>
                 <p class="text-xs sm:text-sm text-slate-500 mt-1" id="authSubtitle">파이어베이스 Cloud에 로그인하여 데이터를 동기화하세요.</p>
             </div>
 
             <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
                 <div id="nameGroup" class="hidden">
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">성함 (실명)</label>
-                    <input type="text" id="authName" placeholder="홍길동" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition">
+                    <input type="text" id="authName" placeholder="홍길동" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none transition">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">이메일 계정</label>
-                    <input type="email" id="authEmail" required placeholder="user@company.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition">
+                    <input type="email" id="authEmail" required placeholder="user@company.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none transition">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">비밀번호</label>
-                    <input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition">
+                    <input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none transition">
                 </div>
 
-                <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 transition duration-200">
+                <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition duration-200">
                     로그인
                 </button>
             </form>
@@ -119,21 +125,23 @@
             <div class="mt-6 pt-4 border-t border-slate-100 text-center">
                 <p class="text-xs sm:text-sm text-slate-600" id="authToggleText">
                     계정이 없으신가요? 
-                    <button type="button" onclick="toggleAuthMode()" class="text-blue-600 font-semibold hover:underline ml-1" id="authToggleBtn">회원가입</button>
+                    <button type="button" onclick="toggleAuthMode()" class="text-blue-600 font-bold hover:underline ml-1" id="authToggleBtn">회원가입</button>
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- Pending Approval Screen -->
+    <!-- ======================================================== -->
+    <!-- 3. PENDING APPROVAL SCREEN (승인 대기 안내 화면)         -->
+    <!-- ======================================================== -->
     <div id="pendingApprovalSection" class="hidden max-w-md mx-auto my-16 px-4 w-full">
         <div class="bg-white rounded-2xl shadow-xl border border-amber-200 p-8 text-center space-y-4">
             <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-2xl">
                 <i class="fa-solid fa-user-clock"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-800">관리자 가입 승인 대기 중</h3>
+            <h3 class="text-xl font-black text-slate-800">관리자 가입 승인 대기 중</h3>
             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                현재 계정은 관리자의 승인을 기다리고 있습니다.<br>
+                현재 계정은 관리자의 가입 승인을 기다리고 있습니다.<br>
                 관리자가 승인 처리한 후에 정상적으로 출장 체크 및 휴무 등록 시스템을 이용하실 수 있습니다.
             </p>
             <div class="pt-2">
@@ -144,24 +152,24 @@
         </div>
     </div>
 
-    <!-- Main Dashboard Application -->
-    <main id="appSection" class="hidden flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+    <!-- ======================================================== -->
+    <!-- 4. GENERAL EMPLOYEE DASHBOARD (일반 사원 화면)           -->
+    <!-- ======================================================== -->
+    <main id="employeeMainSection" class="hidden flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
 
         <!-- Welcome Banner -->
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-4 sm:p-5 text-white shadow-lg relative overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-4 sm:p-6 text-white shadow-lg relative overflow-hidden">
             <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                    <span id="adminBadge" class="hidden inline-block px-2.5 py-0.5 bg-amber-400 text-amber-950 font-extrabold text-[11px] rounded-full mb-1 shadow-sm">
-                        <i class="fa-solid fa-tower-broadcast animate-pulse mr-1"></i> 최고 관리자 실시간 모니터링 가동 중
-                    </span>
-                    <h2 class="text-lg sm:text-2xl font-bold" id="welcomeMessage">반갑습니다! 👋</h2>
+                    <h2 class="text-lg sm:text-2xl font-black" id="welcomeMessage">반갑습니다! 👋</h2>
+                    <p class="text-xs sm:text-sm text-blue-100 mt-1">출장 및 보상휴가 발생/사용 내역을 클라우드에 실시간으로 관리하세요.</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="promptChangeName()" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs sm:text-sm font-medium backdrop-blur-md border border-white/20 transition flex items-center gap-1.5">
+                    <button onclick="promptChangeName()" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs sm:text-sm font-semibold backdrop-blur-md border border-white/20 transition flex items-center gap-1.5">
                         <i class="fa-solid fa-user-pen"></i> 이름 변경
                     </button>
-                    <button onclick="exportToStyledExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold backdrop-blur-md shadow-md transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-file-excel text-base"></i> 엑셀 보고서 (.xlsx)
+                    <button onclick="exportToStyledExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-excel"></i> 엑셀 내보내기 (.xlsx)
                     </button>
                 </div>
             </div>
@@ -169,23 +177,23 @@
 
         <!-- Dashboard Stat Cards -->
         <div class="grid grid-cols-3 gap-2 sm:gap-4">
-            <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+            <div class="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
                 <p class="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider">총 발생 휴무</p>
                 <div class="mt-1">
-                    <h3 class="text-base sm:text-2xl font-extrabold text-slate-800" id="statEarned">0일</h3>
+                    <h3 class="text-base sm:text-2xl font-black text-slate-800" id="statEarned">0일</h3>
                     <p class="text-[10px] sm:text-xs text-slate-400 font-medium" id="statEarnedHours">0시간</p>
                 </div>
             </div>
 
-            <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+            <div class="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
                 <p class="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider">총 사용 휴무</p>
                 <div class="mt-1">
-                    <h3 class="text-base sm:text-2xl font-extrabold text-rose-600" id="statUsed">0일</h3>
+                    <h3 class="text-base sm:text-2xl font-black text-rose-600" id="statUsed">0일</h3>
                     <p class="text-[10px] sm:text-xs text-rose-400 font-medium" id="statUsedHours">0시간</p>
                 </div>
             </div>
 
-            <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between bg-blue-50/30">
+            <div class="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between bg-blue-50/40">
                 <p class="text-[11px] sm:text-xs font-bold text-blue-600 uppercase tracking-wider">잔여 휴무</p>
                 <div class="mt-1">
                     <h3 class="text-base sm:text-2xl font-black text-blue-700" id="statRemaining">0일</h3>
@@ -194,308 +202,144 @@
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="flex border-b border-slate-200 gap-2 sm:gap-4" id="navigationTabs">
-            <button onclick="switchTab('my-records')" id="tab-my-records" class="py-2.5 px-3 sm:px-4 font-bold text-xs sm:text-sm border-b-2 border-blue-600 text-blue-600 flex items-center gap-1.5">
-                <i class="fa-solid fa-list-check"></i> 출장 캘린더 & 휴무 관리
-            </button>
-            <button onclick="switchTab('admin-users')" id="tab-admin-users" class="hidden py-2.5 px-3 sm:px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
-                <i class="fa-solid fa-calendar-days text-amber-500"></i> 사원별 출장 현황 (실시간)
-            </button>
-            <button onclick="switchTab('admin-member-mgmt')" id="tab-admin-member-mgmt" class="hidden py-2.5 px-3 sm:px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
-                <i class="fa-solid fa-users-gear text-indigo-500"></i> 사원 승인 및 회원 관리
-            </button>
-        </div>
-
-        <!-- Tab 1: Personal Leave Entry & Calendar Records -->
-        <div id="content-my-records" class="space-y-4 sm:space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                <!-- Record Form Column -->
-                <div class="lg:col-span-1 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 class="text-sm sm:text-base font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-pen-to-square text-blue-600"></i> 출장 휴무 발생 / 사용 등록
-                    </h3>
-
-                    <form id="recordForm" onsubmit="handleRecordSubmit(event)" class="space-y-3 sm:space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">구분</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="type" value="earned" checked class="peer sr-only" onchange="handleTypeChange()">
-                                    <div class="p-2 sm:p-2.5 text-center text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 transition">
-                                        <i class="fa-solid fa-plus-circle mr-1"></i> 출장 발생 (+휴무)
-                                    </div>
-                                </label>
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="type" value="used" class="peer sr-only" onchange="handleTypeChange()">
-                                    <div class="p-2 sm:p-2.5 text-center text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 transition">
-                                        <i class="fa-solid fa-minus-circle mr-1"></i> 휴무 사용 (-차감)
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Date Selection Area -->
-                        <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <label class="block text-xs font-semibold text-slate-600 uppercase" id="dateSectionTitle">날짜 선택</label>
-                                <button type="button" id="rangeModeToggleBtn" onclick="toggleDateSelectionMode()" class="px-2 py-0.5 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold transition flex items-center gap-1">
-                                    <i class="fa-solid fa-calendar-week" id="rangeModeIcon"></i>
-                                    <span id="rangeModeText">출장 기간(시작~종료일) 선택</span>
-                                </button>
-                            </div>
-
-                            <div id="singleDateInputGroup">
-                                <input type="date" id="recordDate" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-
-                            <div id="rangeDateDisplayGroup" class="hidden p-3 bg-blue-50/80 border border-blue-200 rounded-xl space-y-2">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-xs font-bold text-blue-900" id="rangeStatusText">
-                                        달력에서 출장 첫날과 종료일을 클릭하세요.
-                                    </span>
-                                    <button type="button" onclick="clearRangeSelection()" class="text-[11px] text-rose-500 font-semibold hover:underline">선택 초기화</button>
-                                </div>
-
-                                <div class="text-[11px] text-slate-600 grid grid-cols-2 gap-1.5 bg-white p-2 rounded-lg border border-blue-100">
-                                    <div><span class="text-slate-400 font-medium">출장 첫날:</span> <strong id="displayStartDate" class="text-slate-800">미선택</strong></div>
-                                    <div><span class="text-slate-400 font-medium">출장 종료일:</span> <strong id="displayEndDate" class="text-slate-800">미선택</strong></div>
-                                </div>
-
-                                <div class="pt-1">
-                                    <div class="text-[11px] font-bold text-emerald-800 mb-1" id="holidayCountBadge">
-                                        포함된 휴일 (토·일·공휴일): 0일
-                                    </div>
-                                    <div id="rangeHolidaysBadgesContainer" class="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
-                                        <span class="text-[11px] text-slate-400">기간 내 휴일이 자동 감지되어 휴무로 생성됩니다.</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Earned Category -->
-                        <div id="earnedCategoryContainer">
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">발생 유형</label>
-                            <div class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 font-medium flex items-center gap-2">
-                                <i class="fa-solid fa-plane text-emerald-600"></i> 출장 중 주말 / 공휴일 근무 보상
-                            </div>
-                        </div>
-
-                        <!-- Used Category -->
-                        <div id="usedCategoryContainer" class="hidden">
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">사용 분류</label>
-                            <select id="recordUsedCategory" onchange="handleUsedCategoryChange()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                <option value="연차 휴무 (1일)">연차 휴무 (1일 / 8시간)</option>
-                                <option value="대체휴무 (1일)">대체휴무 (1일 / 8시간)</option>
-                                <option value="오전 반차 (0.5일)">오전 반차 (0.5일 / 4시간)</option>
-                                <option value="오후 반차 (0.5일)">오후 반차 (0.5일 / 4시간)</option>
-                                <option value="시간 단위 외출/조퇴">시간 단위 외출/조퇴</option>
-                                <option value="기타 보상휴가 사용">기타 보상휴가 사용</option>
-                            </select>
-                        </div>
-
-                        <!-- Work/Leave Input Section -->
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-                            <div id="workInputNotice" class="text-[11px] text-blue-600 font-semibold flex items-center gap-1">
-                                <i class="fa-solid fa-calculator"></i> 실제 근무 시간 입력 (가산율 자동 적용)
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label id="inputLabelDays" class="block text-[11px] font-semibold text-slate-600 mb-1">휴일 근무 일수 (일)</label>
-                                    <input type="number" id="inputDays" step="0.125" min="0" placeholder="1" oninput="syncFromInput('days')" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                                </div>
-                                <div>
-                                    <label id="inputLabelHours" class="block text-[11px] font-semibold text-slate-600 mb-1">휴일 근무 시간 (시간)</label>
-                                    <input type="number" id="inputHours" step="0.5" min="0" placeholder="8" oninput="syncFromInput('hours')" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                                </div>
-                            </div>
-
-                            <div class="mt-2 pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
-                                <span class="font-bold text-slate-700" id="resultLabel">적립될 보상휴가:</span>
-                                <span class="font-black text-emerald-600 text-sm" id="calculatedResultText">1.5일 (12시간)</span>
-                            </div>
-                            <p class="text-[10px] text-slate-400" id="calculationDesc">* 근로기준법 제57조: 휴일근로 8h 이내 1.5배, 8h 초과 2배</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">상세 사유 / 출장지</label>
-                            <textarea id="recordNote" rows="2" placeholder="예: 부산 프로젝트 출장 (주말 현장 지원), 연속 연차 사용 등" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
-                        </div>
-
-                        <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md transition text-xs sm:text-sm flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> 내역 등록하기
-                        </button>
-                    </form>
-                </div>
-
-                <!-- 한국식 캘린더 개인 뷰 -->
-                <div class="lg:col-span-2 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col space-y-3">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-                        <div class="flex items-center gap-2">
-                            <button onclick="changeCalendarMonth(-1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="이전 달">
-                                <i class="fa-solid fa-chevron-left text-xs"></i>
-                            </button>
-                            <h3 class="text-base sm:text-lg font-black text-slate-800" id="calendarMonthTitle">2026년 10월</h3>
-                            <button onclick="changeCalendarMonth(1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="다음 달">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </button>
-                            <button onclick="resetCalendarToToday()" class="px-2 py-1 text-xs rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-600 font-medium ml-1">
-                                오늘
-                            </button>
-                        </div>
-
-                        <div class="flex items-center gap-2 text-xs">
-                            <div class="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold" id="calStatEarned">
-                                발생: 0일 (0h)
-                            </div>
-                            <div class="px-2 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-100 font-semibold" id="calStatUsed">
-                                사용: 0일 (0h)
-                            </div>
-                            <div class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-100 font-bold" id="calStatNet">
-                                순변동: 0일
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="calendarModeBanner" class="hidden p-2 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-800 flex items-center justify-between">
-                        <span class="flex items-center gap-1.5 font-bold">
-                            <i class="fa-solid fa-route text-blue-600 animate-bounce"></i> 
-                            출장 기간 선택 모드: 달력에서 출장 첫날과 종료일을 차례로 클릭하세요. (휴일만 자동 체크)
-                        </span>
-                        <button type="button" onclick="toggleDateSelectionMode(false)" class="text-[11px] underline text-blue-600 font-medium">단일 날짜 선택 모드</button>
-                    </div>
-
-                    <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold py-1.5 bg-slate-50 rounded-xl">
-                        <div class="text-rose-500 py-0.5">일</div>
-                        <div class="text-slate-600 py-0.5">월</div>
-                        <div class="text-slate-600 py-0.5">화</div>
-                        <div class="text-slate-600 py-0.5">수</div>
-                        <div class="text-slate-600 py-0.5">목</div>
-                        <div class="text-slate-600 py-0.5">금</div>
-                        <div class="text-blue-500 py-0.5">토</div>
-                    </div>
-
-                    <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-1.5 flex-1 min-h-[380px]"></div>
-
-                    <div class="pt-2 text-right">
-                        <span class="text-[11px] text-slate-400">
-                            💡 달력 날짜를 클릭하면 해당 일자의 상세 내역 팝업이 표시됩니다.
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tab 2: Admin Dashboard (사원별 출장 현황 & 실시간 캘린더) -->
-        <div id="content-admin-users" class="hidden space-y-4 sm:space-y-6">
-            <!-- Admin Top Controls Bar (백업/복원 통합) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-amber-50 border border-amber-200 p-3 sm:p-4 rounded-xl flex items-center justify-between gap-3">
-                    <div class="flex items-center gap-2 sm:gap-3">
-                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-amber-500 text-white rounded-lg flex items-center justify-center font-bold text-sm sm:text-base">
-                            <i class="fa-solid fa-key"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-amber-950 text-xs sm:text-sm">관리자 마스터 비밀번호 관리</h4>
-                            <p class="text-[11px] text-amber-700 hidden sm:block">클라우드에 안전하게 동기화되어 모든 기기에 동일 적용됩니다.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="openAdminOverrideModal()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm">
-                            <i class="fa-solid fa-plus-circle"></i> 휴무 강제 등록
-                        </button>
-                        <button onclick="openChangeAdminPassModal()" class="px-2.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition">
-                            비번 변경
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 전체 데이터 백업 / 복원 카드 -->
-                <div class="bg-indigo-50 border border-indigo-200 p-3 sm:p-4 rounded-xl flex items-center justify-between gap-3">
-                    <div class="flex items-center gap-2 sm:gap-3">
-                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 text-white rounded-lg flex items-center justify-center font-bold text-sm sm:text-base">
-                            <i class="fa-solid fa-database"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-indigo-950 text-xs sm:text-sm">전체 데이터 백업/복원</h4>
-                            <p class="text-[11px] text-indigo-700 hidden sm:block">전사 회원 프로필 및 모든 휴무 DB 일괄 저장/복구</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="exportBackupJSON()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm">
-                            <i class="fa-solid fa-download"></i> 전체백업
-                        </button>
-                        <button onclick="triggerImportJSON('global')" class="px-3 py-1.5 bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm">
-                            <i class="fa-solid fa-upload"></i> 전체복원
-                        </button>
-                        <input type="file" id="globalBackupFileInput" accept=".json" class="hidden" onchange="handleGlobalBackupFileSelect(event)">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 사원별 휴무 현황 테이블 (개별 백업/복원 포함) -->
-            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 class="text-sm sm:text-base font-bold text-slate-800 mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                    <span class="flex items-center gap-2"><i class="fa-solid fa-users-gear text-blue-600"></i> 사원별 출장 휴무 현황 및 개별 데이터 관리</span>
-                    <span class="text-xs text-blue-600 font-semibold">💡 [내역 조회] 버튼을 누르면 아래 달력에 해당 사원의 내역만 표시됩니다.</span>
+        <!-- Personal Entry Form & Calendar -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <!-- Record Entry Form -->
+            <div class="lg:col-span-1 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="text-sm sm:text-base font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-blue-600"></i> 출장 휴무 발생 / 사용 등록
                 </h3>
-                <div id="adminUserSummaryMobile" class="block sm:hidden space-y-2"></div>
-                <div class="hidden sm:block overflow-x-auto border border-slate-100 rounded-xl">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 font-semibold uppercase">
-                                <th class="p-3">사원명</th>
-                                <th class="p-3">이메일 계정</th>
-                                <th class="p-3">가입 승인 상태</th>
-                                <th class="p-3">총 발생</th>
-                                <th class="p-3">총 사용</th>
-                                <th class="p-3">잔여 휴무</th>
-                                <th class="p-3 text-right">개별 백업/복원 및 계정 작업</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminUserSummaryBody" class="divide-y divide-slate-100 text-sm"></tbody>
-                    </table>
-                </div>
+
+                <form id="recordForm" onsubmit="handleRecordSubmit(event)" class="space-y-3 sm:space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">구분</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="type" value="earned" checked class="peer sr-only" onchange="handleTypeChange()">
+                                <div class="p-2.5 text-center text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 transition">
+                                    <i class="fa-solid fa-plus-circle mr-1"></i> 출장 발생 (+휴무)
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="type" value="used" class="peer sr-only" onchange="handleTypeChange()">
+                                <div class="p-2.5 text-center text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500 transition">
+                                    <i class="fa-solid fa-minus-circle mr-1"></i> 휴무 사용 (-차감)
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Date Selection Area -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-semibold text-slate-600 uppercase">날짜 선택</label>
+                            <button type="button" id="rangeModeToggleBtn" onclick="toggleDateSelectionMode()" class="px-2 py-0.5 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold transition flex items-center gap-1">
+                                <i class="fa-solid fa-calendar-week" id="rangeModeIcon"></i>
+                                <span id="rangeModeText">출장 기간(시작~종료일) 선택</span>
+                            </button>
+                        </div>
+
+                        <div id="singleDateInputGroup">
+                            <input type="date" id="recordDate" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+
+                        <div id="rangeDateDisplayGroup" class="hidden p-3 bg-blue-50/80 border border-blue-200 rounded-xl space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-blue-900" id="rangeStatusText">달력에서 출장 첫날과 종료일을 클릭하세요.</span>
+                                <button type="button" onclick="clearRangeSelection()" class="text-[11px] text-rose-500 font-semibold hover:underline">초기화</button>
+                            </div>
+                            <div class="text-[11px] text-slate-600 grid grid-cols-2 gap-1.5 bg-white p-2 rounded-lg border border-blue-100">
+                                <div><span class="text-slate-400 font-medium">출장 첫날:</span> <strong id="displayStartDate" class="text-slate-800">미선택</strong></div>
+                                <div><span class="text-slate-400 font-medium">출장 종료일:</span> <strong id="displayEndDate" class="text-slate-800">미선택</strong></div>
+                            </div>
+                            <div class="pt-1">
+                                <div class="text-[11px] font-bold text-emerald-800 mb-1" id="holidayCountBadge">포함된 휴일 (토·일·공휴일): 0일</div>
+                                <div id="rangeHolidaysBadgesContainer" class="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
+                                    <span class="text-[11px] text-slate-400">기간 내 휴일이 자동 감지되어 휴무로 생성됩니다.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Container -->
+                    <div id="earnedCategoryContainer">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">발생 유형</label>
+                        <div class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 font-medium flex items-center gap-2">
+                            <i class="fa-solid fa-plane text-emerald-600"></i> 출장 중 주말 / 공휴일 근무 보상
+                        </div>
+                    </div>
+
+                    <div id="usedCategoryContainer" class="hidden">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">사용 분류</label>
+                        <select id="recordUsedCategory" onchange="handleUsedCategoryChange()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="연차 휴무 (1일)">연차 휴무 (1일 / 8시간)</option>
+                            <option value="대체휴무 (1일)">대체휴무 (1일 / 8시간)</option>
+                            <option value="오전 반차 (0.5일)">오전 반차 (0.5일 / 4시간)</option>
+                            <option value="오후 반차 (0.5일)">오후 반차 (0.5일 / 4시간)</option>
+                            <option value="시간 단위 외출/조퇴">시간 단위 외출/조퇴</option>
+                            <option value="기타 보상휴가 사용">기타 보상휴가 사용</option>
+                        </select>
+                    </div>
+
+                    <!-- Work / Leave Calculation Box -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                        <div id="workInputNotice" class="text-[11px] text-blue-600 font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-calculator"></i> 실제 근무 시간 입력 (가산율 자동 적용)
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label id="inputLabelDays" class="block text-[11px] font-semibold text-slate-600 mb-1">근무 일수 (일)</label>
+                                <input type="number" id="inputDays" step="0.125" min="0" placeholder="1" oninput="syncFromInput('days')" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label id="inputLabelHours" class="block text-[11px] font-semibold text-slate-600 mb-1">근무 시간 (시간)</label>
+                                <input type="number" id="inputHours" step="0.5" min="0" placeholder="8" oninput="syncFromInput('hours')" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
+                            <span class="font-bold text-slate-700" id="resultLabel">적립될 보상휴가:</span>
+                            <span class="font-black text-emerald-600 text-sm" id="calculatedResultText">+1.5일 (12시간)</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400" id="calculationDesc">* 근로기준법 제57조: 휴일근로 8h 이내 1.5배, 8h 초과 2배</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">상세 사유 / 출장지</label>
+                        <textarea id="recordNote" rows="2" placeholder="예: 부산 프로젝트 출장 지원, 장거리 현장 근무 등" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition text-xs sm:text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> 내역 등록하기
+                    </button>
+                </form>
             </div>
 
-            <!-- 관리자 캘린더 뷰 (실시간 동기화) -->
-            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col space-y-3">
+            <!-- Employee Calendar View -->
+            <div class="lg:col-span-2 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col space-y-3">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                     <div class="flex items-center gap-2">
-                        <button onclick="changeAdminCalMonth(-1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+                        <button onclick="changeCalendarMonth(-1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
                             <i class="fa-solid fa-chevron-left text-xs"></i>
                         </button>
-                        <h3 class="text-base sm:text-lg font-black text-slate-800" id="adminCalMonthTitle">2026년 10월</h3>
-                        <button onclick="changeAdminCalMonth(1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+                        <h3 class="text-base sm:text-lg font-black text-slate-800" id="calendarMonthTitle">2026년 10월</h3>
+                        <button onclick="changeCalendarMonth(1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
                             <i class="fa-solid fa-chevron-right text-xs"></i>
                         </button>
-                        <div class="ml-2 flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-xl">
-                            <i class="fa-solid fa-user-check text-blue-600 text-xs"></i>
-                            <span class="text-xs font-bold text-blue-900" id="adminSelectedUserBadge">전체 사원 통합 보기</span>
-                        </div>
+                        <button onclick="resetCalendarToToday()" class="px-2 py-1 text-xs rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-600 font-medium ml-1">오늘</button>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-2">
-                        <div class="flex items-center gap-1.5">
-                            <label class="text-xs font-bold text-slate-600">사원 선택:</label>
-                            <select id="adminUserFilterSelect" onchange="onAdminUserFilterChange(this.value)" class="px-2.5 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                                <option value="ALL">전체 사원 전체 보기</option>
-                            </select>
-                        </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <div class="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold" id="calStatEarned">발생: 0일</div>
+                        <div class="px-2 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-100 font-semibold" id="calStatUsed">사용: 0일</div>
+                        <div class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-100 font-bold" id="calStatNet">순변동: 0일</div>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 text-xs py-1" id="adminMonthStatsRow">
-                    <div class="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold" id="adminCalStatEarned">
-                        발생: 0일 (0h)
-                    </div>
-                    <div class="px-2 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-100 font-semibold" id="adminCalStatUsed">
-                        사용: 0일 (0h)
-                    </div>
-                    <div class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-100 font-bold" id="adminCalStatNet">
-                        순변동: 0일
-                    </div>
+                <div id="calendarModeBanner" class="hidden p-2 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-800 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5 font-bold">
+                        <i class="fa-solid fa-route text-blue-600 animate-bounce"></i> 출장 기간 선택 모드: 첫날과 종료일을 차례로 클릭하세요.
+                    </span>
+                    <button type="button" onclick="toggleDateSelectionMode(false)" class="text-[11px] underline text-blue-600 font-medium">단일 선택 모드로 변경</button>
                 </div>
 
                 <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold py-1.5 bg-slate-50 rounded-xl">
@@ -508,2493 +352,215 @@
                     <div class="text-blue-500 py-0.5">토</div>
                 </div>
 
-                <div id="adminCalendarGrid" class="grid grid-cols-7 gap-1 sm:gap-1.5 flex-1 min-h-[420px]"></div>
-            </div>
-
-            <!-- 전사 출장 휴무 내역 목록 및 일괄 삭제 -->
-            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100">
-                    <div>
-                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-list-check text-blue-600"></i>
-                            <span id="adminMonthlyListTitle">선택 사원 출장/휴무 내역 관리</span>
-                        </h3>
-                        <p class="text-xs text-slate-400 mt-0.5">삭제할 항목들을 체크박스로 선택하여 일괄 삭제할 수 있습니다.</p>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <label class="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
-                            <input type="checkbox" id="selectAllAdminMonthlyCheck" onchange="toggleSelectAllAdminMonthly(this.checked)" class="w-4 h-4 rounded text-blue-600">
-                            <span>전체 선택</span>
-                        </label>
-                        <button type="button" onclick="deleteSelectedAdminMonthlyRecords()" id="adminMonthlyBatchDeleteBtn" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm disabled:opacity-50" disabled>
-                            <i class="fa-solid fa-trash-can"></i> 선택 삭제 (<span id="adminSelectedDeleteCount">0</span>건)
-                        </button>
-                    </div>
-                </div>
-
-                <div class="hidden sm:block overflow-x-auto border border-slate-100 rounded-xl">
-                    <table class="w-full text-left border-collapse min-w-[700px]">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 font-semibold uppercase">
-                                <th class="p-3 w-10 text-center">선택</th>
-                                <th class="p-3">사원명</th>
-                                <th class="p-3">구분</th>
-                                <th class="p-3">날짜</th>
-                                <th class="p-3">유형/분류</th>
-                                <th class="p-3">일수(시간)</th>
-                                <th class="p-3">상세 사유/출장지</th>
-                                <th class="p-3 text-right">수정/보정</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminMonthlyTableBody" class="divide-y divide-slate-100 text-xs sm:text-sm"></tbody>
-                    </table>
-                </div>
-
-                <div id="adminMonthlyMobileList" class="block sm:hidden space-y-2.5"></div>
-            </div>
-        </div>
-
-        <!-- Tab 3: Admin Member Management & Approval (사원 승인 및 회원 관리) -->
-        <div id="content-admin-member-mgmt" class="hidden space-y-6">
-            <!-- 가입 승인 대기 목록 -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-user-clock text-amber-500"></i> 가입 승인 대기 목록
-                        <span id="pendingBadgeCount" class="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 font-bold rounded-full">0건</span>
-                    </h3>
-                </div>
-                <div class="overflow-x-auto border border-slate-100 rounded-xl">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 font-semibold uppercase">
-                                <th class="p-3">성함</th>
-                                <th class="p-3">이메일</th>
-                                <th class="p-3">가입 신청일</th>
-                                <th class="p-3 text-right">승인 처리</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pendingUsersTableBody" class="divide-y divide-slate-100 text-sm"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- 전체 회원 명단 및 상태 관리 -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-address-book text-indigo-600"></i> 전체 사원 명단 및 계정 상태 관리
-                    </h3>
-                    <input type="text" id="memberSearchInput" oninput="renderMemberManagementTable()" placeholder="이름 또는 이메일 검색..." class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs outline-none">
-                </div>
-                <div class="overflow-x-auto border border-slate-100 rounded-xl">
-                    <table class="w-full text-left border-collapse min-w-[650px]">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 font-semibold uppercase">
-                                <th class="p-3">성함</th>
-                                <th class="p-3">이메일</th>
-                                <th class="p-3">계정 상태</th>
-                                <th class="p-3">UID</th>
-                                <th class="p-3 text-right">관리 작업</th>
-                            </tr>
-                        </thead>
-                        <tbody id="allMembersTableBody" class="divide-y divide-slate-100 text-sm"></tbody>
-                    </table>
-                </div>
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-1.5 flex-1 min-h-[380px]"></div>
             </div>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="mt-auto py-4 bg-white border-t border-slate-200 text-center text-[11px] sm:text-xs text-slate-500">
-        <p>© 2026 출장 체크 시스템 (대한민국 공휴일 & 근로기준법 기준)</p>
-    </footer>
-
-    <!-- Hidden file inputs for individual restore -->
-    <input type="file" id="singleUserBackupFileInput" accept=".json" class="hidden" onchange="handleSingleUserBackupFileSelect(event)">
-
-    <!-- Modal 1: Day Detail Popup Modal -->
-    <div id="dayDetailModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] flex flex-col overflow-hidden animate-fade-in">
-            <div class="p-4 sm:p-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-center justify-between">
-                <div>
-                    <h3 class="text-base sm:text-lg font-bold flex items-center gap-2" id="dayDetailTitle">
-                        <i class="fa-solid fa-calendar-day"></i> 휴무 상세 내역
-                    </h3>
-                    <p class="text-xs text-blue-100 mt-0.5" id="dayDetailSubtitle"></p>
+    <!-- ======================================================== -->
+    <!-- 5. [LAYOUT 1] INDEPENDENT ADMIN CONTROL CENTER (전용 관제) -->
+    <!-- ======================================================== -->
+    <div id="adminControlCenter" class="hidden min-h-screen flex flex-col bg-slate-900 text-slate-100 z-40 fixed inset-0 overflow-hidden">
+        
+        <!-- Admin Top Navigation Header -->
+        <header class="h-16 bg-slate-950 border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between z-20">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleAdminSidebar()" class="lg:hidden p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-bars text-base"></i>
+                </button>
+                <div class="w-9 h-9 bg-amber-500 text-slate-950 rounded-xl flex items-center justify-center font-black text-lg shadow-md shadow-amber-500/20">
+                    <i class="fa-solid fa-tower-broadcast"></i>
                 </div>
-                <button onclick="closeDayDetailModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-base sm:text-lg font-black tracking-tight text-white">최고 관리자 관제 센터</h2>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> 실시간 Live
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">전사 출장 일정 및 보상휴가 실시간 통제 시스템</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="openAdminOverrideModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-plus-circle"></i> <span class="hidden sm:inline">사원 휴무</span> 강제 등록
+                </button>
+                <button onclick="openChangeAdminPassModal()" class="p-2 sm:px-3 sm:py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium border border-slate-700 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-key text-amber-400"></i> <span class="hidden sm:inline">비번 변경</span>
+                </button>
+                <button onclick="exitAdminMode()" class="px-3 py-1.5 bg-rose-600/90 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>관제 센터 나가기</span>
                 </button>
             </div>
+        </header>
 
-            <div class="p-4 overflow-y-auto flex-1 space-y-2.5" id="dayDetailList"></div>
+        <!-- Admin Body Layout: Left Sidebar + Main Viewport -->
+        <div class="flex-1 flex overflow-hidden">
+            
+            <!-- Collapsible Left Sidebar -->
+            <aside id="adminSidebar" class="w-64 bg-slate-950/90 border-r border-slate-800 flex flex-col justify-between p-3 sidebar-transition fixed lg:static inset-y-16 left-0 z-30 lg:z-auto -translate-x-full lg:translate-x-0">
+                <div class="space-y-1.5">
+                    <p class="px-3 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">관제 메뉴 선택</p>
+                    
+                    <button onclick="switchAdminView('members')" id="adminNav-members" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-blue-600 text-white shadow-md">
+                        <span class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-users-gear text-base"></i> 사원 및 승인 관리
+                        </span>
+                        <span id="sidebarPendingBadge" class="hidden px-2 py-0.5 rounded-full text-[10px] bg-amber-400 text-slate-950 font-black animate-pulse">0</span>
+                    </button>
 
-            <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                <span class="text-xs text-slate-500" id="dayDetailSummary"></span>
-                <button onclick="closeDayDetailModal()" class="px-4 py-1.5 bg-slate-800 text-white rounded-xl text-xs font-semibold hover:bg-slate-900 transition">
-                    닫기
-                </button>
-            </div>
-        </div>
-    </div>
+                    <button onclick="switchAdminView('calendar')" id="adminNav-calendar" class="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:bg-slate-800/80 hover:text-slate-100 transition">
+                        <i class="fa-solid fa-calendar-days text-base text-amber-400"></i> 전사 출장 캘린더
+                    </button>
 
-    <!-- Modal 2: Edit Record Modal -->
-    <div id="editRecordModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-3">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="text-sm sm:text-base font-bold text-slate-800">휴무 내역 수정 / 강제 보정</h3>
-                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form id="editForm" onsubmit="handleEditSubmit(event)" class="space-y-3 text-xs sm:text-sm">
-                <input type="hidden" id="editRecordId">
-                <input type="hidden" id="editUserId">
+                    <button onclick="switchAdminView('records')" id="adminNav-records" class="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:bg-slate-800/80 hover:text-slate-100 transition">
+                        <i class="fa-solid fa-list-check text-base text-emerald-400"></i> 내역 통합 조회 / 보정
+                    </button>
 
-                <div>
-                    <label class="block font-semibold text-slate-600 mb-1">날짜</label>
-                    <input type="date" id="editDate" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-600 mb-1">유형/분류</label>
-                    <input type="text" id="editCategory" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block font-semibold text-slate-600 mb-1">휴무 일수(일)</label>
-                        <input type="number" id="editDays" step="0.125" min="0" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-600 mb-1">휴무 시간(h)</label>
-                        <input type="number" id="editHours" step="0.5" min="0" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
-                    </div>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-600 mb-1">사유</label>
-                    <textarea id="editNote" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-300 resize-none"></textarea>
-                </div>
-                <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeEditModal()" class="w-1/2 py-2 bg-slate-100 text-slate-600 font-semibold rounded-xl hover:bg-slate-200">취소</button>
-                    <button type="submit" class="w-1/2 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700">저장</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal 3: 관리자 마스터 비밀번호 변경 전용 모달 -->
-    <div id="changeAdminPassModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-4">
-            <div class="flex items-center justify-between border-b pb-2">
-                <h3 class="text-base font-bold text-slate-800 flex items-center gap-1.5">
-                    <i class="fa-solid fa-shield-halved text-amber-500"></i> 관리자 비밀번호 변경
-                </h3>
-                <button onclick="closeChangeAdminPassModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-
-            <form id="changeAdminPassForm" onsubmit="submitChangeAdminPassword(event)" class="space-y-3 text-xs sm:text-sm">
-                <div>
-                    <label class="block font-semibold text-slate-600 mb-1">현재 관리자 비밀번호</label>
-                    <div class="relative">
-                        <input type="password" id="curAdminPass" required placeholder="기존 비밀번호 입력" class="w-full px-3 py-2 pr-9 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-amber-500">
-                        <button type="button" onclick="togglePasswordVisibility('curAdminPass', 'curAdminPassEye')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
-                            <i class="fa-solid fa-eye" id="curAdminPassEye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block font-semibold text-slate-600 mb-1">새로운 비밀번호</label>
-                    <div class="relative">
-                        <input type="password" id="newAdminPass1" required placeholder="새 비밀번호 입력 (4자 이상)" class="w-full px-3 py-2 pr-9 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-amber-500">
-                        <button type="button" onclick="togglePasswordVisibility('newAdminPass1', 'newAdminPass1Eye')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
-                            <i class="fa-solid fa-eye" id="newAdminPass1Eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block font-semibold text-slate-600 mb-1">새로운 비밀번호 확인</label>
-                    <div class="relative">
-                        <input type="password" id="newAdminPass2" required placeholder="새 비밀번호 재입력" class="w-full px-3 py-2 pr-9 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-amber-500">
-                        <button type="button" onclick="togglePasswordVisibility('newAdminPass2', 'newAdminPass2Eye')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
-                            <i class="fa-solid fa-eye" id="newAdminPass2Eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeChangeAdminPassModal()" class="w-1/2 py-2 bg-slate-100 text-slate-600 font-semibold rounded-xl text-xs hover:bg-slate-200">취소</button>
-                    <button type="submit" class="w-1/2 py-2 bg-amber-600 text-white font-bold rounded-xl text-xs hover:bg-amber-700">변경 저장</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal 4: 관리자 직접 사원 휴무 대리/강제 등록 모달 -->
-    <div id="adminOverrideModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-3">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-1.5">
-                    <i class="fa-solid fa-user-pen text-blue-600"></i> 사원 휴무 대리/강제 등록
-                </h3>
-                <button onclick="closeAdminOverrideModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form id="adminOverrideForm" onsubmit="submitAdminOverrideRecord(event)" class="space-y-2.5 text-xs sm:text-sm">
-                <div>
-                    <label class="block font-semibold text-slate-600 mb-1">대상 사원 선택</label>
-                    <select id="adminOverrideUserSelect" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-600 mb-1">구분</label>
-                    <select id="adminOverrideType" class="w-full px-3 py-2 rounded-xl border border-slate-300">
-                        <option value="earned">발생 (+부여)</option>
-                        <option value="used">사용 (-차감)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-600 mb-1">날짜</label>
-                    <input type="date" id="adminOverrideDate" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-600 mb-1">유형/분류</label>
-                    <input type="text" id="adminOverrideCategory" placeholder="예: 출장 특근 보정, 대체휴무 부여 등" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block font-semibold text-slate-600 mb-1">일수(일)</label>
-                        <input type="number" id="adminOverrideDays" step="0.125" min="0" placeholder="1" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-600 mb-1">시간(h)</label>
-                        <input type="number" id="adminOverrideHours" step="0.5" min="0" placeholder="8" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
-                    </div>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-600 mb-1">관리자 등록 사유</label>
-                    <textarea id="adminOverrideNote" rows="2" placeholder="관리자 권한 직접 보정 등록 사유 입력" class="w-full px-3 py-2 rounded-xl border border-slate-300 resize-none"></textarea>
-                </div>
-                <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeAdminOverrideModal()" class="w-1/2 py-2 bg-slate-100 text-slate-600 font-semibold rounded-xl text-xs hover:bg-slate-200">취소</button>
-                    <button type="submit" class="w-1/2 py-2 bg-blue-600 text-white font-bold rounded-xl text-xs hover:bg-blue-700">강제 등록</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Alert / Confirm / Prompt Modal -->
-    <div id="customModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 text-center space-y-3">
-            <h3 class="text-base font-bold text-slate-800" id="modalTitle">알림</h3>
-            <p class="text-xs sm:text-sm text-slate-600 whitespace-pre-line" id="modalMessage">내용</p>
-            <div id="modalPromptContainer" class="hidden">
-                <div class="relative">
-                    <input type="password" id="modalPromptInput" class="w-full px-3 py-2 pr-9 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="비밀번호를 입력하세요">
-                    <button type="button" onclick="togglePasswordVisibility('modalPromptInput', 'modalPromptEye')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
-                        <i class="fa-solid fa-eye" id="modalPromptEye"></i>
+                    <button onclick="switchAdminView('settings')" id="adminNav-settings" class="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:bg-slate-800/80 hover:text-slate-100 transition">
+                        <i class="fa-solid fa-database text-base text-indigo-400"></i> 시스템 설정 / 백업
                     </button>
                 </div>
-                <div class="mt-2 text-right">
-                    <button type="button" onclick="startAdminPasswordRecovery()" class="text-[11px] text-blue-600 hover:underline">관리자 비밀번호 찾기(재설정)</button>
+
+                <!-- Admin Status Card in Sidebar -->
+                <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-1">
+                    <p class="text-slate-400 font-semibold flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-check text-emerald-400 text-[10px]"></i> 실시간 Firestore 연동
+                    </p>
+                    <p class="text-[11px] text-slate-500">모든 사원의 입력이 새로고침 없이 즉시 반영됩니다.</p>
                 </div>
-            </div>
-            <div class="flex gap-2 justify-center pt-2" id="modalButtons">
-                <button onclick="closeModal()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-blue-700 transition w-full">확인</button>
-            </div>
-        </div>
-    </div>
+            </aside>
 
-    <!-- QR Modal -->
-    <div id="qrModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-xs w-full p-5 text-center space-y-3">
-            <h3 class="text-base font-bold text-slate-800">모바일 접속 QR</h3>
-            <div id="qrcode" class="flex justify-center p-2 bg-white border border-slate-200 rounded-xl"></div>
-            <button onclick="closeQRModal()" class="w-full py-2 bg-slate-800 text-white font-semibold text-xs rounded-xl hover:bg-slate-900">닫기</button>
-        </div>
-    </div>
-
-    <!-- Firebase SDK Integration & Korean Real-Time Engine -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut, 
-            sendPasswordResetEmail,
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            collectionGroup, // 전사 실시간 스트림 리스너용
-            doc, 
-            setDoc, 
-            getDoc, 
-            getDocs, 
-            addDoc, 
-            updateDoc, 
-            deleteDoc, 
-            onSnapshot, 
-            query, 
-            orderBy, 
-            serverTimestamp 
-        } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'dayoff-tracker-prod';
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBEOQI0Kc6483Mrw2mWHqLRRJhpDk0E61Q",
-            authDomain: "dayofftracker-1a453.firebaseapp.com",
-            databaseURL: "https://dayofftracker-1a453-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "dayofftracker-1a453",
-            storageBucket: "dayofftracker-1a453.firebasestorage.app",
-            messagingSenderId: "71136470002",
-            appId: "1:71136470002:web:e33bc193c8818db688c16b",
-            measurementId: "G-ZQ36HXLS2Z"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        try { getAnalytics(app); } catch (e) {}
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let currentUser = null;
-        let currentUserProfile = null;
-        let myRecords = [];
-        let allUsersData = [];
-        let allRecordsData = [];
-        let isAdminMode = false;
-        let isAuthSignUp = false;
-        let unsubscribeMyRecords = null;
-
-        // 관리자 실시간 스트림 리스너 관리 변수
-        let unsubscribeAdminUsers = null;
-        let unsubscribeAdminRecords = null;
-
-        let calculatedDays = 1.5;
-        let calculatedHours = 12;
-
-        let isRangeSelectionMode = false;
-        let tripStartDate = null;
-        let tripEndDate = null;
-        let detectedHolidaysList = [];
-
-        let adminSelectedRecordsToDelete = new Set();
-        let selectedAdminUserId = 'ALL';
-
-        let currentCalYear = new Date().getFullYear();
-        let currentCalMonth = new Date().getMonth();
-        let adminCalYear = new Date().getFullYear();
-        let adminCalMonth = new Date().getMonth();
-
-        const KOREAN_HOLIDAYS = {
-            fixed: {
-                '01-01': '신정',
-                '03-01': '3·1절',
-                '05-05': '어린이날',
-                '06-06': '현충일',
-                '08-15': '광복절',
-                '10-03': '개천절',
-                '10-09': '한글날',
-                '12-25': '성탄절'
-            },
-            lunarAndSubstitutes: {
-                '2025-01-28': '설날 연휴',
-                '2025-01-29': '설날',
-                '2025-01-30': '설날 연휴',
-                '2025-03-03': '대체공휴일(3·1절)',
-                '2025-05-05': '어린이날',
-                '2025-05-06': '대체공휴일(부처님오신날)',
-                '2025-10-05': '추석 연휴',
-                '2025-10-06': '추석',
-                '2025-10-07': '추석 연휴',
-                '2025-10-08': '대체공휴일(추석)',
+            <!-- Admin Main Content Area -->
+            <div class="flex-1 flex flex-col overflow-y-auto bg-slate-900 p-4 sm:p-6 space-y-5">
                 
-                '2026-02-16': '설날 연휴',
-                '2026-02-17': '설날',
-                '2026-02-18': '설날 연휴',
-                '2026-03-02': '대체공휴일(3·1절)',
-                '2026-05-24': '부처님오신날',
-                '2026-05-25': '대체공휴일(부처님오신날)',
-                '2026-06-03': '제9회 지방선거',
-                '2026-08-17': '대체공휴일(광복절)',
-                '2026-09-24': '추석 연휴',
-                '2026-09-25': '추석',
-                '2026-09-26': '추석 연휴',
-                '2026-10-05': '대체공휴일(개천절)',
-                
-                '2027-02-06': '설날 연휴',
-                '2027-02-07': '설날',
-                '2027-02-08': '설날 연휴',
-                '2027-02-09': '대체공휴일(설날)',
-                '2027-05-13': '부처님오신날',
-                '2027-08-16': '대체공휴일(광복절)',
-                '2027-09-14': '추석 연휴',
-                '2027-09-15': '추석',
-                '2027-09-16': '추석 연휴',
-                '2027-10-04': '대체공휴일(개천절)',
-                '2027-10-11': '대체공휴일(한글날)'
-            }
-        };
-
-        function getKoreanHoliday(year, month, day) {
-            const mm = String(month).padStart(2, '0');
-            const dd = String(day).padStart(2, '0');
-            const dateStr = `${year}-${mm}-${dd}`;
-            const monthDay = `${mm}-${dd}`;
-
-            if (KOREAN_HOLIDAYS.lunarAndSubstitutes[dateStr]) {
-                return KOREAN_HOLIDAYS.lunarAndSubstitutes[dateStr];
-            }
-            if (KOREAN_HOLIDAYS.fixed[monthDay]) {
-                return KOREAN_HOLIDAYS.fixed[monthDay];
-            }
-            return null;
-        }
-
-        function isWeekendOrHoliday(dateStr) {
-            const d = new Date(dateStr);
-            const dayOfWeek = d.getDay();
-            if (dayOfWeek === 0 || dayOfWeek === 6) return true;
-            const [y, m, day] = dateStr.split('-');
-            return Boolean(getKoreanHoliday(parseInt(y, 10), parseInt(m, 10), parseInt(day, 10)));
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            setupAuthListener();
-            setDefaultDate();
-            document.getElementById('inputDays').value = 1;
-            document.getElementById('inputHours').value = 8;
-            calculateCompensatoryLeave();
-        });
-
-        window.togglePasswordVisibility = function(inputId, eyeIconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(eyeIconId);
-            if (!input || !icon) return;
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = 'fa-solid fa-eye-slash';
-            } else {
-                input.type = 'password';
-                icon.className = 'fa-solid fa-eye';
-            }
-        };
-
-        function setDefaultDate() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('recordDate').value = today;
-        }
-
-        window.toggleDateSelectionMode = function(forceState) {
-            if (typeof forceState === 'boolean') {
-                isRangeSelectionMode = forceState;
-            } else {
-                isRangeSelectionMode = !isRangeSelectionMode;
-            }
-
-            const toggleBtn = document.getElementById('rangeModeToggleBtn');
-            const toggleText = document.getElementById('rangeModeText');
-            const toggleIcon = document.getElementById('rangeModeIcon');
-            const banner = document.getElementById('calendarModeBanner');
-            const singleGroup = document.getElementById('singleDateInputGroup');
-            const rangeGroup = document.getElementById('rangeDateDisplayGroup');
-            const type = document.querySelector('input[name="type"]:checked').value;
-
-            if (isRangeSelectionMode) {
-                toggleBtn.className = "px-2.5 py-1 rounded-lg border border-blue-600 bg-blue-600 text-white text-[11px] font-bold transition flex items-center gap-1 shadow-sm";
-                toggleText.textContent = (type === 'earned') ? "출장 기간 선택 켜짐 (완료)" : "연속 휴무 선택 켜짐 (완료)";
-                toggleIcon.className = "fa-solid fa-check";
-                banner.classList.remove('hidden');
-                singleGroup.classList.add('hidden');
-                rangeGroup.classList.remove('hidden');
-            } else {
-                toggleBtn.className = "px-2 py-0.5 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold transition flex items-center gap-1";
-                toggleText.textContent = (type === 'earned') ? "출장 기간(시작~종료일) 선택" : "연속 날짜(시작~종료일) 선택";
-                toggleIcon.className = "fa-solid fa-calendar-week";
-                banner.classList.add('hidden');
-
-                if (detectedHolidaysList.length <= 1) {
-                    singleGroup.classList.remove('hidden');
-                    rangeGroup.classList.add('hidden');
-                    if (detectedHolidaysList.length === 1) {
-                        document.getElementById('recordDate').value = detectedHolidaysList[0];
-                    }
-                }
-            }
-
-            renderCalendar();
-        };
-
-        window.clearRangeSelection = function() {
-            tripStartDate = null;
-            tripEndDate = null;
-            detectedHolidaysList = [];
-            updateRangeUI();
-            renderCalendar();
-            document.getElementById('inputDays').value = 1;
-            document.getElementById('inputHours').value = 8;
-            calculateCompensatoryLeave();
-        };
-
-        function handleRangeSelection(clickedDateStr) {
-            const type = document.querySelector('input[name="type"]:checked').value;
-
-            if (!tripStartDate || (tripStartDate && tripEndDate)) {
-                tripStartDate = clickedDateStr;
-                tripEndDate = null;
-                detectedHolidaysList = [];
-            } else if (tripStartDate && !tripEndDate) {
-                if (clickedDateStr < tripStartDate) {
-                    tripStartDate = clickedDateStr;
-                    tripEndDate = null;
-                } else {
-                    tripEndDate = clickedDateStr;
-                    calculateHolidaysInRange(tripStartDate, tripEndDate, type);
-                }
-            }
-
-            updateRangeUI();
-            renderCalendar();
-        }
-
-        function calculateHolidaysInRange(startStr, endStr, type) {
-            const result = [];
-            const cur = new Date(startStr);
-            const end = new Date(endStr);
-
-            while (cur <= end) {
-                const y = cur.getFullYear();
-                const m = String(cur.getMonth() + 1).padStart(2, '0');
-                const d = String(cur.getDate()).padStart(2, '0');
-                const dateKey = `${y}-${m}-${d}`;
-
-                if (type === 'earned') {
-                    if (isWeekendOrHoliday(dateKey)) {
-                        result.push(dateKey);
-                    }
-                } else {
-                    result.push(dateKey);
-                }
-
-                cur.setDate(cur.getDate() + 1);
-            }
-
-            detectedHolidaysList = result;
-
-            const count = detectedHolidaysList.length;
-            document.getElementById('inputDays').value = count > 0 ? count : 1;
-            document.getElementById('inputHours').value = (count > 0 ? count : 1) * 8;
-            calculateCompensatoryLeave();
-        }
-
-        function updateRangeUI() {
-            const displayStart = document.getElementById('displayStartDate');
-            const displayEnd = document.getElementById('displayEndDate');
-            const statusText = document.getElementById('rangeStatusText');
-            const countBadge = document.getElementById('holidayCountBadge');
-            const badgesContainer = document.getElementById('rangeHolidaysBadgesContainer');
-            const type = document.querySelector('input[name="type"]:checked').value;
-
-            displayStart.textContent = tripStartDate || '미선택';
-            displayEnd.textContent = tripEndDate || '미선택';
-
-            if (!tripStartDate) {
-                statusText.textContent = (type === 'earned') ? "달력에서 출장 첫날을 선택하세요." : "달력에서 휴무 시작일을 선택하세요.";
-            } else if (tripStartDate && !tripEndDate) {
-                statusText.innerHTML = `<span class="text-blue-600 font-bold">${tripStartDate}</span> 선택됨 ➔ 종료일을 클릭하세요.`;
-            } else {
-                statusText.innerHTML = `<span class="text-emerald-700 font-bold">출장 기간 설정 완료!</span>`;
-            }
-
-            if (type === 'earned') {
-                countBadge.textContent = `기간 내 포함된 휴일 (토·일·공휴일): ${detectedHolidaysList.length}일`;
-            } else {
-                countBadge.textContent = `연속 사용할 휴가 일수: ${detectedHolidaysList.length}일`;
-            }
-
-            if (detectedHolidaysList.length === 0) {
-                if (tripStartDate && tripEndDate && type === 'earned') {
-                    badgesContainer.innerHTML = `<span class="text-xs text-rose-500 font-bold">선택하신 출장 기간 내에 주말/공휴일이 없습니다. (평일만 포함됨)</span>`;
-                } else {
-                    badgesContainer.innerHTML = `<span class="text-[11px] text-slate-400">기간 내 휴일이 자동 감지되어 휴무로 생성됩니다.</span>`;
-                }
-                return;
-            }
-
-            badgesContainer.innerHTML = detectedHolidaysList.map(d => {
-                const [y, m, day] = d.split('-');
-                const hol = getKoreanHoliday(parseInt(y, 10), parseInt(m, 10), parseInt(day, 10));
-                const holLabel = hol ? ` (${hol})` : '';
-                return `
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[11px] font-bold">
-                        <i class="fa-solid fa-check text-[9px]"></i> ${d}${holLabel}
-                    </span>
-                `;
-            }).join('');
-        }
-
-        // ==================== 계산 로직 ====================
-        function calculateCompensatoryLeave() {
-            const type = document.querySelector('input[name="type"]:checked').value;
-            const inputH = parseFloat(document.getElementById('inputHours').value) || 0;
-
-            if (type === 'earned') {
-                const daysCount = detectedHolidaysList.length > 0 ? detectedHolidaysList.length : 1;
-                const standardHours = daysCount * 8;
-
-                if (inputH <= standardHours) {
-                    calculatedHours = inputH * 1.5;
-                } else {
-                    calculatedHours = (standardHours * 1.5) + ((inputH - standardHours) * 2.0);
-                }
-                calculatedDays = calculatedHours / 8;
-
-                document.getElementById('resultLabel').textContent = "적립될 보상휴가:";
-                document.getElementById('calculatedResultText').className = "font-black text-emerald-600 text-sm";
-                document.getElementById('calculatedResultText').textContent = `+${calculatedDays.toFixed(2).replace(/\.00$/, '')}일 (${calculatedHours}시간)`;
-                document.getElementById('calculationDesc').textContent = `* 근로기준법 제57조/제56조: 휴일 ${daysCount}일 기준 8h/일 1.5배 가산 적용`;
-            } else {
-                calculatedHours = inputH;
-                calculatedDays = inputH / 8;
-
-                document.getElementById('resultLabel').textContent = "차감될 사용휴가:";
-                document.getElementById('calculatedResultText').className = "font-black text-rose-600 text-sm";
-                document.getElementById('calculatedResultText').textContent = `-${calculatedDays.toFixed(2).replace(/\.00$/, '')}일 (${calculatedHours}시간)`;
-                document.getElementById('calculationDesc').textContent = "* 보유 잔여 휴무에서 1:1로 차감됩니다.";
-            }
-        }
-
-        window.syncFromInput = function(source) {
-            const daysInput = document.getElementById('inputDays');
-            const hoursInput = document.getElementById('inputHours');
-
-            if (source === 'days') {
-                const val = parseFloat(daysInput.value) || 0;
-                hoursInput.value = (val * 8);
-            } else {
-                const val = parseFloat(hoursInput.value) || 0;
-                daysInput.value = (val / 8);
-            }
-            calculateCompensatoryLeave();
-        };
-
-        window.handleTypeChange = function() {
-            const type = document.querySelector('input[name="type"]:checked').value;
-            const earnedContainer = document.getElementById('earnedCategoryContainer');
-            const usedContainer = document.getElementById('usedCategoryContainer');
-            const notice = document.getElementById('workInputNotice');
-            const labelDays = document.getElementById('inputLabelDays');
-            const labelHours = document.getElementById('inputLabelHours');
-            const toggleBtn = document.getElementById('rangeModeToggleBtn');
-            const toggleText = document.getElementById('rangeModeText');
-
-            toggleDateSelectionMode(false);
-            clearRangeSelection();
-
-            if (type === 'earned') {
-                earnedContainer.classList.remove('hidden');
-                usedContainer.classList.add('hidden');
-                toggleBtn.classList.remove('hidden');
-                toggleText.textContent = "출장 기간(시작~종료일) 선택";
-                notice.innerHTML = `<i class="fa-solid fa-calculator"></i> 실제 근무 시간 입력 (가산율 자동 적용)`;
-                labelDays.textContent = "휴일 근무 일수 (일)";
-                labelHours.textContent = "휴일 근무 시간 (시간)";
-            } else {
-                earnedContainer.classList.add('hidden');
-                usedContainer.classList.remove('hidden');
-                toggleText.textContent = "연속 날짜(시작~종료일) 선택";
-                notice.innerHTML = `<i class="fa-solid fa-calendar-minus"></i> 실제 사용할 휴가 입력`;
-                labelDays.textContent = "사용 일수 (일)";
-                labelHours.textContent = "사용 시간 (시간)";
-                handleUsedCategoryChange();
-            }
-            calculateCompensatoryLeave();
-        };
-
-        window.handleUsedCategoryChange = function() {
-            const sel = document.getElementById('recordUsedCategory').value;
-            const daysInput = document.getElementById('inputDays');
-            const hoursInput = document.getElementById('inputHours');
-            const toggleBtn = document.getElementById('rangeModeToggleBtn');
-
-            if (sel.includes('연차 휴무') || sel.includes('대체휴무')) {
-                toggleBtn.classList.remove('hidden');
-                daysInput.value = 1;
-                hoursInput.value = 8;
-            } else {
-                toggleBtn.classList.add('hidden');
-                toggleDateSelectionMode(false);
-                clearRangeSelection();
-
-                if (sel.includes('반차')) {
-                    daysInput.value = 0.5;
-                    hoursInput.value = 4;
-                } else if (sel.includes('외출/조퇴')) {
-                    daysInput.value = 0.25;
-                    hoursInput.value = 2;
-                } else {
-                    daysInput.value = 1;
-                    hoursInput.value = 8;
-                }
-            }
-            calculateCompensatoryLeave();
-        };
-
-        window.toggleAuthMode = function() {
-            isAuthSignUp = !isAuthSignUp;
-            const title = document.getElementById('authTitle');
-            const subtitle = document.getElementById('authSubtitle');
-            const submitBtn = document.getElementById('authSubmitBtn');
-            const nameGroup = document.getElementById('nameGroup');
-            const toggleBtn = document.getElementById('authToggleBtn');
-            const toggleText = document.getElementById('authToggleText');
-
-            if (isAuthSignUp) {
-                title.textContent = "회원가입";
-                subtitle.textContent = "가입 신청 후 관리자의 승인이 완료되어야 로그인할 수 있습니다.";
-                submitBtn.textContent = "회원가입 신청";
-                nameGroup.classList.remove('hidden');
-                document.getElementById('authName').required = true;
-                toggleText.childNodes[0].nodeValue = "이미 계정이 있으신가요? ";
-                toggleBtn.textContent = "로그인";
-            } else {
-                title.textContent = "로그인";
-                subtitle.textContent = "파이어베이스 Cloud에 로그인하여 데이터를 동기화하세요.";
-                submitBtn.textContent = "로그인";
-                nameGroup.classList.add('hidden');
-                document.getElementById('authName').required = false;
-                toggleText.childNodes[0].nodeValue = "계정이 없으신가요? ";
-                toggleBtn.textContent = "회원가입";
-            }
-        };
-
-        window.handleAuthSubmit = async function(e) {
-            e.preventDefault();
-            showLoading(true, "인증 정보를 처리하는 중...");
-
-            const email = document.getElementById('authEmail').value.trim();
-            const password = document.getElementById('authPassword').value.trim();
-            const name = document.getElementById('authName').value.trim();
-
-            try {
-                if (isAuthSignUp) {
-                    if (!name) throw new Error("성함을 입력해주세요.");
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
-
-                    // 기본 상태: pending (관리자 승인 대기)
-                    const userRef = doc(db, `artifacts/${appId}/users`, user.uid);
-                    await setDoc(userRef, {
-                        uid: user.uid,
-                        name: name,
-                        email: email,
-                        status: 'pending',
-                        createdAt: serverTimestamp()
-                    });
-
-                    await signOut(auth);
-                    showLoading(false);
-                    showAlertModal("가입 신청 완료", "회원가입 신청이 성공적으로 접수되었습니다.\n관리자의 승인이 완료된 후 시스템 이용이 가능합니다.");
-                    toggleAuthMode();
-                } else {
-                    await signInWithEmailAndPassword(auth, email, password);
-                }
-            } catch (err) {
-                showLoading(false);
-                let msg = err.message;
-                if (err.code === 'auth/user-not-found') msg = "등록되지 않은 이메일입니다.";
-                if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = "이메일 또는 비밀번호가 올바르지 않습니다.";
-                if (err.code === 'auth/email-already-in-use') msg = "이미 등록된 이메일 계정입니다.";
-                if (err.code === 'auth/weak-password') msg = "비밀번호는 최소 6자 이상이어야 합니다.";
-                showAlertModal("인증 실패", msg);
-            }
-        };
-
-        function setupAuthListener() {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentUser = user;
-                    const userRef = doc(db, `artifacts/${appId}/users`, user.uid);
-                    let userDoc = await getDoc(userRef);
-
-                    // 프로필 누락 방지: Firestore에 user 문서가 없을 경우 이름 입력 후 생성
-                    if (!userDoc.exists()) {
-                        const fallbackName = prompt("시스템에 등록할 성함(실명)을 입력해주세요:", user.email.split('@')[0]) || user.email.split('@')[0];
-                        await setDoc(userRef, {
-                            uid: user.uid,
-                            name: fallbackName,
-                            email: user.email,
-                            status: 'approved',
-                            createdAt: serverTimestamp()
-                        });
-                        userDoc = await getDoc(userRef);
-                    }
-
-                    currentUserProfile = userDoc.data();
-
-                    // 승인 여부 검증 (pending 계정은 승인 대기 화면 노출)
-                    if (currentUserProfile.status === 'pending' && !isAdminMode) {
-                        document.getElementById('authSection').classList.add('hidden');
-                        document.getElementById('appSection').classList.add('hidden');
-                        document.getElementById('pendingApprovalSection').classList.remove('hidden');
-                        document.getElementById('userHeaderControls').classList.remove('hidden');
-                        showLoading(false);
-                        return;
-                    }
-
-                    document.getElementById('authSection').classList.add('hidden');
-                    document.getElementById('pendingApprovalSection').classList.add('hidden');
-                    document.getElementById('appSection').classList.remove('hidden');
-                    document.getElementById('userHeaderControls').classList.remove('hidden');
-
-                    updateWelcomeBanner();
-                    listenMyRecords();
-                } else {
-                    currentUser = null;
-                    currentUserProfile = null;
-                    if (unsubscribeMyRecords) unsubscribeMyRecords();
-
-                    document.getElementById('authSection').classList.remove('hidden');
-                    document.getElementById('pendingApprovalSection').classList.add('hidden');
-                    document.getElementById('appSection').classList.add('hidden');
-                    document.getElementById('userHeaderControls').classList.add('hidden');
-                }
-                showLoading(false);
-            });
-        }
-
-        function updateWelcomeBanner() {
-            if (currentUserProfile) {
-                document.getElementById('welcomeMessage').textContent = `반갑습니다, ${currentUserProfile.name || '사원'}님! 👋`;
-            }
-        }
-
-        window.promptChangeName = function() {
-            if (!currentUser) return;
-            showPromptModal("성함 변경", "변경하실 성함(실명)을 입력하세요:", async (newName) => {
-                if (!newName || !newName.trim()) return;
-                showLoading(true, "성함 변경 중...");
-                try {
-                    await updateDoc(doc(db, `artifacts/${appId}/users`, currentUser.uid), { name: newName.trim() });
-                    currentUserProfile.name = newName.trim();
-                    updateWelcomeBanner();
-                    showLoading(false);
-                    showAlertModal("완료", "성함이 정상적으로 변경되었습니다.");
-                } catch (e) {
-                    showLoading(false);
-                    showAlertModal("오류", e.message);
-                }
-            }, false, currentUserProfile?.name || '');
-        };
-
-        window.handleLogout = async function() {
-            showLoading(true, "로그아웃 중...");
-            await signOut(auth);
-            isAdminMode = false;
-            updateAdminUI();
-        };
-
-        function listenMyRecords() {
-            if (!currentUser) return;
-
-            const recordsRef = collection(db, `artifacts/${appId}/users/${currentUser.uid}/leave_records`);
-            const q = query(recordsRef, orderBy('date', 'desc'));
-
-            unsubscribeMyRecords = onSnapshot(q, (snapshot) => {
-                myRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderCalendar();
-                calculateStats();
-            }, (err) => {
-                console.error("Firestore Listener Error:", err);
-            });
-        }
-
-        // ==================== 개인 캘린더 엔진 ====================
-        window.changeCalendarMonth = function(delta) {
-            currentCalMonth += delta;
-            if (currentCalMonth < 0) {
-                currentCalMonth = 11;
-                currentCalYear -= 1;
-            } else if (currentCalMonth > 11) {
-                currentCalMonth = 0;
-                currentCalYear += 1;
-            }
-            renderCalendar();
-        };
-
-        window.resetCalendarToToday = function() {
-            const today = new Date();
-            currentCalYear = today.getFullYear();
-            currentCalMonth = today.getMonth();
-            renderCalendar();
-        };
-
-        window.renderCalendar = function() {
-            const grid = document.getElementById('calendarGrid');
-            const monthTitle = document.getElementById('calendarMonthTitle');
-            if (!grid) return;
-
-            const year = currentCalYear;
-            const month = currentCalMonth;
-            monthTitle.textContent = `${year}년 ${month + 1}월`;
-
-            const firstDayIndex = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            const prevMonthLastDate = new Date(year, month, 0).getDate();
-
-            const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
-            let monthEarnedHours = 0;
-            let monthUsedHours = 0;
-
-            myRecords.forEach(r => {
-                if ((r.date || '').startsWith(monthPrefix)) {
-                    const hrs = parseFloat(r.hours) || 0;
-                    if (r.type === 'earned') monthEarnedHours += hrs;
-                    else monthUsedHours += hrs;
-                }
-            });
-
-            const netHours = monthEarnedHours - monthUsedHours;
-            const netDays = (netHours / 8).toFixed(2).replace(/\.00$/, '');
-
-            document.getElementById('calStatEarned').textContent = `발생: ${(monthEarnedHours/8).toFixed(1)}일 (${monthEarnedHours}h)`;
-            document.getElementById('calStatUsed').textContent = `사용: ${(monthUsedHours/8).toFixed(1)}일 (${monthUsedHours}h)`;
-            document.getElementById('calStatNet').textContent = `순변동: ${netHours >= 0 ? '+' : ''}${netDays}일 (${netHours}h)`;
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            let html = '';
-
-            for (let i = firstDayIndex - 1; i >= 0; i--) {
-                const prevD = prevMonthLastDate - i;
-                html += `
-                    <div class="p-1 sm:p-2 min-h-[64px] sm:min-h-[76px] rounded-xl bg-slate-50/50 border border-transparent text-slate-300 text-xs flex flex-col justify-between opacity-40 cursor-not-allowed">
-                        <span>${prevD}</span>
-                    </div>
-                `;
-            }
-
-            for (let day = 1; day <= lastDate; day++) {
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const dayOfWeek = new Date(year, month, day).getDay();
-
-                const isSunday = dayOfWeek === 0;
-                const isSaturday = dayOfWeek === 6;
-                const isToday = dateStr === todayStr;
-
-                const isTripStart = (dateStr === tripStartDate);
-                const isTripEnd = (dateStr === tripEndDate);
-                const isWithinTrip = (tripStartDate && tripEndDate && dateStr >= tripStartDate && dateStr <= tripEndDate);
-                const isDetectedHoliday = detectedHolidaysList.includes(dateStr);
-
-                const holidayName = getKoreanHoliday(year, month + 1, day);
-                const isHoliday = Boolean(holidayName);
-
-                let dayNumberClass = "text-slate-700";
-                if (isSunday || isHoliday) {
-                    dayNumberClass = "text-rose-500 font-bold";
-                } else if (isSaturday) {
-                    dayNumberClass = "text-blue-500 font-bold";
-                }
-
-                const dayRecords = myRecords.filter(r => r.date === dateStr);
-
-                let badgesHtml = '';
-                if (dayRecords.length > 0) {
-                    badgesHtml = dayRecords.map(r => {
-                        const isEarned = r.type === 'earned';
-                        const badgeBg = isEarned ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
-                        const sign = isEarned ? '+' : '-';
-                        return `
-                            <div class="px-1 py-0.5 rounded text-[10px] font-black truncate ${badgeBg}">
-                                ${sign}${r.days}일
-                            </div>
-                        `;
-                    }).join('');
-                }
-
-                let borderAndBg = 'border-slate-200/80 bg-white';
-                if (isTripStart || isTripEnd) {
-                    borderAndBg = 'border-blue-600 ring-2 ring-blue-600 bg-blue-100 shadow-md';
-                } else if (isDetectedHoliday) {
-                    borderAndBg = 'border-emerald-500 ring-2 ring-emerald-400 bg-emerald-50/80 shadow-sm';
-                } else if (isWithinTrip) {
-                    borderAndBg = 'border-blue-200 bg-blue-50/40';
-                } else if (isToday) {
-                    borderAndBg = 'border-blue-500 bg-blue-50/20 shadow-sm';
-                }
-
-                html += `
-                    <div onclick="handleCalendarDateClick('${dateStr}')" class="p-1 sm:p-1.5 min-h-[64px] sm:min-h-[76px] rounded-xl border ${borderAndBg} hover:border-blue-400 hover:shadow-sm transition cursor-pointer flex flex-col justify-between group relative">
-                        ${isTripStart ? '<span class="absolute top-1 right-1 text-[9px] font-black px-1 rounded bg-blue-600 text-white">시작</span>' : ''}
-                        ${isTripEnd ? '<span class="absolute top-1 right-1 text-[9px] font-black px-1 rounded bg-blue-600 text-white">종료</span>' : ''}
-                        ${isDetectedHoliday && !isTripStart && !isTripEnd ? '<span class="absolute top-1 right-1 text-[9px] font-black px-1 rounded bg-emerald-600 text-white">휴일</span>' : ''}
-
+                <!-- Real-time KPI Stats Banner (4 Cards) -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="bg-slate-800/90 border border-slate-700/80 p-3.5 sm:p-4 rounded-2xl flex items-center justify-between">
                         <div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs font-semibold ${dayNumberClass}">${day}</span>
-                                ${isToday && !isTripStart && !isTripEnd ? '<span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>' : ''}
-                            </div>
-                            ${holidayName ? `<div class="text-[9px] sm:text-[10px] font-bold text-rose-500 truncate leading-tight mt-0.5">${holidayName}</div>` : ''}
+                            <p class="text-[11px] font-bold text-slate-400 uppercase">전체 등록 사원</p>
+                            <h4 class="text-xl sm:text-2xl font-black text-white mt-1" id="kpiTotalUsers">0명</h4>
                         </div>
-                        <div class="space-y-0.5 mt-1 flex-1 flex flex-col justify-end">
-                            ${badgesHtml}
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-users"></i>
                         </div>
                     </div>
-                `;
-            }
 
-            const totalCells = firstDayIndex + lastDate;
-            const remainingCells = (7 - (totalCells % 7)) % 7;
-            for (let nextD = 1; nextD <= remainingCells; nextD++) {
-                html += `
-                    <div class="p-1 sm:p-2 min-h-[64px] sm:min-h-[76px] rounded-xl bg-slate-50/50 border border-transparent text-slate-300 text-xs flex flex-col justify-between opacity-40 cursor-not-allowed">
-                        <span>${nextD}</span>
-                    </div>
-                `;
-            }
-
-            grid.innerHTML = html;
-        };
-
-        window.handleCalendarDateClick = function(dateStr) {
-            if (isRangeSelectionMode) {
-                handleRangeSelection(dateStr);
-            } else {
-                document.getElementById('recordDate').value = dateStr;
-                openDayDetailModal(dateStr, false);
-            }
-        };
-
-        // ==================== 관리자 캘린더 엔진 (실시간 연동) ====================
-        window.changeAdminCalMonth = function(delta) {
-            adminCalMonth += delta;
-            if (adminCalMonth < 0) {
-                adminCalMonth = 11;
-                adminCalYear -= 1;
-            } else if (adminCalMonth > 11) {
-                adminCalMonth = 0;
-                adminCalYear += 1;
-            }
-            renderAdminCalendar();
-            renderAdminMonthlyList();
-        };
-
-        window.onAdminUserFilterChange = function(userId) {
-            selectedAdminUserId = userId;
-            const badge = document.getElementById('adminSelectedUserBadge');
-            
-            if (userId === 'ALL') {
-                badge.textContent = '전체 사원 통합 보기';
-            } else {
-                const targetUser = allUsersData.find(u => u.uid === userId);
-                badge.textContent = `${targetUser?.name || '사원'} 님의 내역`;
-            }
-
-            renderAdminCalendar();
-            renderAdminMonthlyList();
-        };
-
-        window.viewSpecificUserRecords = function(userId, userName) {
-            selectedAdminUserId = userId;
-            const selectElem = document.getElementById('adminUserFilterSelect');
-            if (selectElem) selectElem.value = userId;
-
-            const badge = document.getElementById('adminSelectedUserBadge');
-            if (badge) badge.textContent = `${userName} 님의 내역`;
-
-            renderAdminCalendar();
-            renderAdminMonthlyList();
-
-            const calElem = document.getElementById('adminCalendarGrid');
-            if (calElem) {
-                calElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        };
-
-        window.renderAdminCalendar = function() {
-            const grid = document.getElementById('adminCalendarGrid');
-            const monthTitle = document.getElementById('adminCalMonthTitle');
-            if (!grid) return;
-
-            const year = adminCalYear;
-            const month = adminCalMonth;
-            monthTitle.textContent = `${year}년 ${month + 1}월`;
-
-            const firstDayIndex = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            const prevMonthLastDate = new Date(year, month, 0).getDate();
-            const todayStr = new Date().toISOString().split('T')[0];
-
-            let targetRecords = allRecordsData;
-            if (selectedAdminUserId !== 'ALL') {
-                targetRecords = allRecordsData.filter(r => r.userId === selectedAdminUserId);
-            }
-
-            const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
-            let monthEarnedHours = 0;
-            let monthUsedHours = 0;
-
-            targetRecords.forEach(r => {
-                if ((r.date || '').startsWith(monthPrefix)) {
-                    const hrs = parseFloat(r.hours) || 0;
-                    if (r.type === 'earned') monthEarnedHours += hrs;
-                    else monthUsedHours += hrs;
-                }
-            });
-
-            const netHours = monthEarnedHours - monthUsedHours;
-            const netDays = (netHours / 8).toFixed(2).replace(/\.00$/, '');
-
-            document.getElementById('adminCalStatEarned').textContent = `발생: ${(monthEarnedHours/8).toFixed(1)}일 (${monthEarnedHours}h)`;
-            document.getElementById('adminCalStatUsed').textContent = `사용: ${(monthUsedHours/8).toFixed(1)}일 (${monthUsedHours}h)`;
-            document.getElementById('adminCalStatNet').textContent = `순변동: ${netHours >= 0 ? '+' : ''}${netDays}일 (${netHours}h)`;
-
-            let html = '';
-
-            for (let i = firstDayIndex - 1; i >= 0; i--) {
-                const prevD = prevMonthLastDate - i;
-                html += `
-                    <div class="p-1 sm:p-2 min-h-[70px] sm:min-h-[85px] rounded-xl bg-slate-50/50 border border-transparent text-slate-300 text-xs flex flex-col justify-between opacity-40 cursor-not-allowed">
-                        <span>${prevD}</span>
-                    </div>
-                `;
-            }
-
-            for (let day = 1; day <= lastDate; day++) {
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const dayOfWeek = new Date(year, month, day).getDay();
-
-                const isSunday = dayOfWeek === 0;
-                const isSaturday = dayOfWeek === 6;
-                const isToday = dateStr === todayStr;
-
-                const holidayName = getKoreanHoliday(year, month + 1, day);
-                const isHoliday = Boolean(holidayName);
-
-                let dayNumberClass = "text-slate-700";
-                if (isSunday || isHoliday) {
-                    dayNumberClass = "text-rose-500 font-bold";
-                } else if (isSaturday) {
-                    dayNumberClass = "text-blue-500 font-bold";
-                }
-
-                let dayRecords = targetRecords.filter(r => r.date === dateStr);
-
-                let badgesHtml = '';
-                if (dayRecords.length > 0) {
-                    badgesHtml = dayRecords.map(r => {
-                        const isEarned = r.type === 'earned';
-                        const badgeBg = isEarned ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200';
-                        const sign = isEarned ? '+' : '-';
-                        const showName = (selectedAdminUserId === 'ALL') ? `${r.userName} ` : '';
-                        return `
-                            <div class="px-1 py-0.5 rounded text-[10px] font-bold truncate ${badgeBg}" title="${r.userName}: ${r.category}">
-                                ${showName}${sign}${r.days}일
-                            </div>
-                        `;
-                    }).join('');
-                }
-
-                html += `
-                    <div onclick="openDayDetailModal('${dateStr}', true)" class="p-1 sm:p-1.5 min-h-[70px] sm:min-h-[85px] rounded-xl border ${isToday ? 'border-amber-500 bg-amber-50/20 shadow-sm' : 'border-slate-200/80 bg-white'} hover:border-amber-400 hover:shadow-sm transition cursor-pointer flex flex-col justify-between group">
+                    <div class="bg-slate-800/90 border border-slate-700/80 p-3.5 sm:p-4 rounded-2xl flex items-center justify-between">
                         <div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs font-semibold ${dayNumberClass}">${day}</span>
-                                ${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>' : ''}
-                            </div>
-                            ${holidayName ? `<div class="text-[9px] sm:text-[10px] font-bold text-rose-500 truncate leading-tight mt-0.5">${holidayName}</div>` : ''}
+                            <p class="text-[11px] font-bold text-slate-400 uppercase">가입 승인 대기</p>
+                            <h4 class="text-xl sm:text-2xl font-black text-amber-400 mt-1" id="kpiPendingUsers">0건</h4>
                         </div>
-                        <div class="space-y-0.5 mt-1 flex-1 flex flex-col justify-end overflow-hidden">
-                            ${badgesHtml}
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg" id="kpiPendingIconBox">
+                            <i class="fa-solid fa-user-clock"></i>
                         </div>
                     </div>
-                `;
-            }
 
-            const totalCells = firstDayIndex + lastDate;
-            const remainingCells = (7 - (totalCells % 7)) % 7;
-            for (let nextD = 1; nextD <= remainingCells; nextD++) {
-                html += `
-                    <div class="p-1 sm:p-2 min-h-[70px] sm:min-h-[85px] rounded-xl bg-slate-50/50 border border-transparent text-slate-300 text-xs flex flex-col justify-between opacity-40 cursor-not-allowed">
-                        <span>${nextD}</span>
-                    </div>
-                `;
-            }
-
-            grid.innerHTML = html;
-        };
-
-        window.renderAdminMonthlyList = function() {
-            const tableBody = document.getElementById('adminMonthlyTableBody');
-            const mobileList = document.getElementById('adminMonthlyMobileList');
-            const titleElem = document.getElementById('adminMonthlyListTitle');
-
-            if (!tableBody || !mobileList) return;
-
-            const year = adminCalYear;
-            const month = adminCalMonth;
-            const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
-
-            let targetUserText = '전체 사원';
-            if (selectedAdminUserId !== 'ALL') {
-                const u = allUsersData.find(x => x.uid === selectedAdminUserId);
-                targetUserText = `[${u?.name || '사원'}]`;
-            }
-
-            if (titleElem) {
-                titleElem.textContent = `${year}년 ${month + 1}월 ${targetUserText} 출장/휴무 내역 관리`;
-            }
-
-            let monthlyRecords = allRecordsData.filter(r => (r.date || '').startsWith(monthPrefix));
-            if (selectedAdminUserId !== 'ALL') {
-                monthlyRecords = monthlyRecords.filter(r => r.userId === selectedAdminUserId);
-            }
-
-            monthlyRecords.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-
-            adminSelectedRecordsToDelete.clear();
-            const selectAllCheck = document.getElementById('selectAllAdminMonthlyCheck');
-            if (selectAllCheck) selectAllCheck.checked = false;
-            updateAdminMonthlyBatchDeleteButton();
-
-            if (monthlyRecords.length === 0) {
-                const emptyMsg = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs sm:text-sm">${year}년 ${month + 1}월에 등록된 내역이 없습니다.</td></tr>`;
-                tableBody.innerHTML = emptyMsg;
-                mobileList.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs sm:text-sm">${year}년 ${month + 1}월에 등록된 내역이 없습니다.</div>`;
-                return;
-            }
-
-            tableBody.innerHTML = monthlyRecords.map(r => {
-                const isEarned = r.type === 'earned';
-                const badgeClass = isEarned ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200';
-                const badgeText = isEarned ? '발생 (+)' : '사용 (-)';
-                const recordKey = `${r.id}:::${r.userId}`;
-
-                return `
-                    <tr class="hover:bg-slate-50/80 transition">
-                        <td class="p-3 text-center">
-                            <input type="checkbox" data-key="${recordKey}" onchange="toggleAdminMonthlyCheck('${recordKey}', this.checked)" class="admin-monthly-item-check w-4 h-4 rounded text-blue-600 cursor-pointer">
-                        </td>
-                        <td class="p-3 font-bold text-slate-800">${r.userName || '미설정'}</td>
-                        <td class="p-3">
-                            <span class="px-2 py-0.5 border text-xs font-bold rounded-full ${badgeClass}">
-                                ${badgeText}
-                            </span>
-                        </td>
-                        <td class="p-3 text-slate-700 font-medium">${r.date}</td>
-                        <td class="p-3 font-semibold text-slate-800">${r.category}</td>
-                        <td class="p-3 font-bold ${isEarned ? 'text-emerald-600' : 'text-rose-600'}">
-                            ${isEarned ? '+' : '-'}${r.days}일 <span class="text-xs font-normal text-slate-400">(${r.hours}h)</span>
-                        </td>
-                        <td class="p-3 text-slate-500 text-xs max-w-xs truncate" title="${r.note || ''}">${r.note || '-'}</td>
-                        <td class="p-3 text-right">
-                            <button onclick="openEditModal('${r.id}', '${r.userId}')" class="px-2.5 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded text-xs font-semibold mr-1">수정/보정</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-
-            mobileList.innerHTML = monthlyRecords.map(r => {
-                const isEarned = r.type === 'earned';
-                const cardBorder = isEarned ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-rose-500';
-                const badgeClass = isEarned ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700';
-                const recordKey = `${r.id}:::${r.userId}`;
-
-                return `
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm ${cardBorder} flex items-start gap-2.5 text-xs">
-                        <div class="pt-0.5">
-                            <input type="checkbox" data-key="${recordKey}" onchange="toggleAdminMonthlyCheck('${recordKey}', this.checked)" class="admin-monthly-item-check w-4 h-4 rounded text-blue-600 cursor-pointer">
+                    <div class="bg-slate-800/90 border border-slate-700/80 p-3.5 sm:p-4 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase">이달 전사 발생 휴무</p>
+                            <h4 class="text-xl sm:text-2xl font-black text-emerald-400 mt-1" id="kpiMonthEarned">0일</h4>
                         </div>
-                        <div class="flex-1 flex flex-col gap-1.5">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-extrabold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">${r.userName}</span>
-                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${badgeClass}">
-                                        ${isEarned ? '발생' : '사용'}
-                                    </span>
-                                    <span class="text-slate-500 font-medium">${r.date}</span>
-                                </div>
-                                <span class="font-black ${isEarned ? 'text-emerald-600' : 'text-rose-600'}">
-                                    ${isEarned ? '+' : '-'}${r.days}일 (${r.hours}h)
-                                </span>
-                            </div>
-                            <div class="font-bold text-slate-800 flex items-center justify-between">
-                                <span>${r.category}</span>
-                                <button onclick="openEditModal('${r.id}', '${r.userId}')" class="text-xs text-blue-600 font-semibold underline">수정/보정</button>
-                            </div>
-                            ${r.note ? `<p class="text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg leading-relaxed">${r.note}</p>` : ''}
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-plane-circle-check"></i>
                         </div>
                     </div>
-                `;
-            }).join('');
-        };
 
-        window.toggleAdminMonthlyCheck = function(key, isChecked) {
-            if (isChecked) adminSelectedRecordsToDelete.add(key);
-            else adminSelectedRecordsToDelete.delete(key);
-            document.querySelectorAll(`.admin-monthly-item-check[data-key="${key}"]`).forEach(cb => cb.checked = isChecked);
-            updateAdminMonthlyBatchDeleteButton();
-        };
-
-        window.toggleSelectAllAdminMonthly = function(isChecked) {
-            const checkboxes = document.querySelectorAll('.admin-monthly-item-check');
-            checkboxes.forEach(cb => {
-                cb.checked = isChecked;
-                const k = cb.getAttribute('data-key');
-                if (isChecked) adminSelectedRecordsToDelete.add(k);
-                else adminSelectedRecordsToDelete.delete(k);
-            });
-            updateAdminMonthlyBatchDeleteButton();
-        };
-
-        function updateAdminMonthlyBatchDeleteButton() {
-            const count = adminSelectedRecordsToDelete.size;
-            const countElem = document.getElementById('adminSelectedDeleteCount');
-            const btn = document.getElementById('adminMonthlyBatchDeleteBtn');
-            if (countElem) countElem.textContent = count;
-            if (btn) {
-                btn.disabled = (count === 0);
-                btn.classList.toggle('opacity-50', count === 0);
-            }
-        }
-
-        window.deleteSelectedAdminMonthlyRecords = function() {
-            const count = adminSelectedRecordsToDelete.size;
-            if (count === 0) return;
-
-            showConfirmModal("일괄 삭제 확인", `선택하신 ${count}개의 출장/휴무 내역을 영구 삭제하시겠습니까?`, async () => {
-                showLoading(true, `${count}개 내역 삭제 중...`);
-                try {
-                    const deletePromises = [];
-                    adminSelectedRecordsToDelete.forEach(key => {
-                        const [recId, uId] = key.split(':::');
-                        const docRef = doc(db, `artifacts/${appId}/users/${uId}/leave_records`, recId);
-                        deletePromises.push(deleteDoc(docRef));
-                    });
-
-                    await Promise.all(deletePromises);
-                    showLoading(false);
-                    showAlertModal("삭제 완료", `선택하신 ${count}개의 내역이 성공적으로 삭제되었습니다.`);
-                } catch (err) {
-                    showLoading(false);
-                    showAlertModal("오류 발생", "삭제 실패: " + err.message);
-                }
-            });
-        };
-
-        // ==================== 날짜별 상세 팝업 ====================
-        window.openDayDetailModal = function(dateStr, isAdminView = false) {
-            let records = [];
-            if (isAdminView) {
-                if (selectedAdminUserId !== 'ALL') {
-                    records = allRecordsData.filter(r => r.date === dateStr && r.userId === selectedAdminUserId);
-                } else {
-                    records = allRecordsData.filter(r => r.date === dateStr);
-                }
-            } else {
-                records = myRecords.filter(r => r.date === dateStr);
-            }
-
-            const [y, m, d] = dateStr.split('-');
-            const holiday = getKoreanHoliday(parseInt(y, 10), parseInt(m, 10), parseInt(d, 10));
-            const holidayText = holiday ? ` <span class="text-rose-400 text-xs font-bold">(${holiday})</span>` : '';
-            const displayDate = `${y}년 ${parseInt(m, 10)}월 ${parseInt(d, 10)}일${holidayText}`;
-
-            document.getElementById('dayDetailTitle').innerHTML = `<i class="fa-solid fa-calendar-day"></i> ${displayDate} ${isAdminView ? '<span class="text-amber-200 text-xs font-normal">[관리자 상세]</span>' : ''}`;
-            document.getElementById('dayDetailSubtitle').textContent = `총 ${records.length}건의 등록 내역이 있습니다.`;
-
-            const listContainer = document.getElementById('dayDetailList');
-
-            if (records.length === 0) {
-                listContainer.innerHTML = `
-                    <div class="p-6 text-center text-slate-400 text-xs sm:text-sm">
-                        해당 날짜에 등록된 발생/사용 내역이 없습니다.
-                        ${!isAdminView ? '<p class="mt-1 text-[11px] text-blue-500">좌측 등록 폼의 날짜가 이 날짜로 자동 선택되었습니다.</p>' : ''}
+                    <div class="bg-slate-800/90 border border-slate-700/80 p-3.5 sm:p-4 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase">전사 잔여 휴무 총합</p>
+                            <h4 class="text-xl sm:text-2xl font-black text-blue-400 mt-1" id="kpiTotalPool">0일</h4>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
                     </div>
-                `;
-                document.getElementById('dayDetailSummary').textContent = '';
-                document.getElementById('dayDetailModal').classList.remove('hidden');
-                return;
-            }
+                </div>
 
-            let earnedH = 0, usedH = 0;
-            records.forEach(r => {
-                if (r.type === 'earned') earnedH += (parseFloat(r.hours) || 0);
-                else usedH += (parseFloat(r.hours) || 0);
-            });
-
-            document.getElementById('dayDetailSummary').innerHTML = `
-                일 합계: 발생 <strong class="text-emerald-600">+${earnedH}h</strong> / 사용 <strong class="text-rose-600">-${usedH}h</strong>
-            `;
-
-            listContainer.innerHTML = records.map(r => {
-                const isEarned = r.type === 'earned';
-                const cardBorder = isEarned ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-rose-500';
-                const badgeClass = isEarned ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700';
-                const uId = r.userId || currentUser.uid;
-
-                return `
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm ${cardBorder} flex flex-col gap-1.5 text-xs">
+                <!-- [VIEW 1] 사원 및 승인 관리 (Member & Approval Hub) -->
+                <div id="adminView-members" class="space-y-5">
+                    <!-- 가입 승인 대기 섹션 -->
+                    <div id="adminPendingSection" class="bg-slate-800/90 border border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3">
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${badgeClass}">
-                                    ${isEarned ? '발생 (+)' : '사용 (-)'}
-                                </span>
-                                ${isAdminView ? `<span class="font-extrabold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">${r.userName}</span>` : ''}
-                                <span class="font-bold text-slate-800">${r.category}</span>
-                            </div>
-                            <span class="font-black ${isEarned ? 'text-emerald-600' : 'text-rose-600'}">
-                                ${isEarned ? '+' : '-'}${r.days}일 (${r.hours}시간)
-                            </span>
+                            <h3 class="text-sm sm:text-base font-bold text-amber-300 flex items-center gap-2">
+                                <i class="fa-solid fa-user-clock"></i> 가입 승인 대기 신청 목록
+                                <span id="adminPendingBadgeInside" class="px-2 py-0.5 text-xs bg-amber-400 text-slate-950 font-black rounded-full">0건</span>
+                            </h3>
+                            <span class="text-xs text-slate-400 hidden sm:inline">승인 전까지는 일반 대시보드 접근이 차단됩니다.</span>
                         </div>
-
-                        ${r.note ? `<p class="text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg leading-relaxed">${r.note}</p>` : ''}
-
-                        ${isAdminMode ? `
-                            <div class="flex justify-end gap-2 pt-1 border-t border-slate-100">
-                                <button onclick="closeDayDetailModal(); openEditModal('${r.id}', '${uId}')" class="text-xs text-blue-600 font-semibold hover:underline">수정/보정</button>
-                                <button onclick="closeDayDetailModal(); deleteRecord('${r.id}', '${uId}')" class="text-xs text-rose-600 font-semibold hover:underline">삭제</button>
-                            </div>
-                        ` : ''}
+                        <div class="overflow-x-auto border border-slate-700/60 rounded-xl">
+                            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                                <thead>
+                                    <tr class="bg-slate-950/70 border-b border-slate-700 text-slate-400 font-bold uppercase">
+                                        <th class="p-3">성함</th>
+                                        <th class="p-3">이메일</th>
+                                        <th class="p-3">가입 신청일</th>
+                                        <th class="p-3 text-right">승인 액션</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminPendingTableBody" class="divide-y divide-slate-700/60 text-slate-200"></tbody>
+                            </table>
+                        </div>
                     </div>
-                `;
-            }).join('');
 
-            document.getElementById('dayDetailModal').classList.remove('hidden');
-        };
-
-        window.closeDayDetailModal = function() {
-            document.getElementById('dayDetailModal').classList.add('hidden');
-        };
-
-        // ==================== 통계 및 저장 ====================
-        function calculateStats() {
-            let totalEarnedHours = 0;
-            let totalUsedHours = 0;
-
-            myRecords.forEach(r => {
-                const hrs = parseFloat(r.hours) || (parseFloat(r.days) * 8) || 0;
-                if (r.type === 'earned') totalEarnedHours += hrs;
-                else totalUsedHours += hrs;
-            });
-
-            const remainingHours = totalEarnedHours - totalUsedHours;
-
-            document.getElementById('statEarned').textContent = `${(totalEarnedHours/8).toFixed(2).replace(/\.00$/, '')}일`;
-            document.getElementById('statEarnedHours').textContent = `${totalEarnedHours}시간`;
-
-            document.getElementById('statUsed').textContent = `${(totalUsedHours/8).toFixed(2).replace(/\.00$/, '')}일`;
-            document.getElementById('statUsedHours').textContent = `${totalUsedHours}시간`;
-
-            document.getElementById('statRemaining').textContent = `${(remainingHours/8).toFixed(2).replace(/\.00$/, '')}일`;
-            document.getElementById('statRemainingHours').textContent = `${remainingHours}시간`;
-        }
-
-        window.handleRecordSubmit = async function(e) {
-            e.preventDefault();
-            if (!currentUser) return;
-
-            const type = document.querySelector('input[name="type"]:checked').value;
-            const note = document.getElementById('recordNote').value.trim();
-
-            let category = "출장 중 주말/공휴일 근무 보상";
-            if (type === 'used') {
-                category = document.getElementById('recordUsedCategory').value;
-            }
-
-            const isRangeSelected = (isRangeSelectionMode && detectedHolidaysList.length > 0);
-            const targetDates = isRangeSelected ? [...detectedHolidaysList] : [document.getElementById('recordDate').value];
-
-            if (targetDates.length === 0 || !targetDates[0]) {
-                showAlertModal("입력 오류", "출장 기간 또는 날짜를 선택해 주세요.");
-                return;
-            }
-
-            const rawWorkHours = parseFloat(document.getElementById('inputHours').value) || 0;
-
-            if (calculatedHours <= 0) {
-                showAlertModal("입력 오류", "근무 시간 또는 사용 휴가 시간을 정확히 입력해 주세요.");
-                return;
-            }
-
-            showLoading(true, "클라우드에 저장하는 중...");
-
-            try {
-                const recordsRef = collection(db, `artifacts/${appId}/users/${currentUser.uid}/leave_records`);
-
-                if (isRangeSelected && targetDates.length > 1) {
-                    const perDayDays = calculatedDays / targetDates.length;
-                    const perDayHours = calculatedHours / targetDates.length;
-                    const perDayWorkHours = type === 'earned' ? (rawWorkHours / targetDates.length) : null;
-
-                    for (const dateItem of targetDates) {
-                        await addDoc(recordsRef, {
-                            type,
-                            date: dateItem,
-                            category,
-                            days: parseFloat(perDayDays.toFixed(3)),
-                            hours: parseFloat(perDayHours.toFixed(1)),
-                            rawWorkHours: perDayWorkHours,
-                            note: note ? `[출장휴일: ${tripStartDate}~${tripEndDate}] ${note}` : `[출장 기간 주말/공휴일]`,
-                            createdAt: serverTimestamp()
-                        });
-                    }
-                } else {
-                    await addDoc(recordsRef, {
-                        type,
-                        date: targetDates[0],
-                        category,
-                        days: parseFloat(calculatedDays.toFixed(3)),
-                        hours: parseFloat(calculatedHours.toFixed(1)),
-                        rawWorkHours: type === 'earned' ? rawWorkHours : null,
-                        note,
-                        createdAt: serverTimestamp()
-                    });
-                }
-
-                document.getElementById('recordNote').value = '';
-                toggleDateSelectionMode(false);
-                clearRangeSelection();
-                showLoading(false);
-                showAlertModal("등록 완료", "출장 휴무 내역이 정상 등록되었습니다!");
-            } catch (err) {
-                showLoading(false);
-                showAlertModal("오류 발생", "저장 실패: " + err.message);
-            }
-        };
-
-        // ==================== 관리자 보안 & 비밀번호 변경 ====================
-        async function getMasterAdminPassword() {
-            try {
-                const configDoc = await getDoc(doc(db, `artifacts/${appId}/config`, 'admin'));
-                if (configDoc.exists() && configDoc.data().password) {
-                    return configDoc.data().password;
-                }
-            } catch (e) {
-                console.error("Config fetch error:", e);
-            }
-            return localStorage.getItem('admin_master_pass') || '2026admin!';
-        }
-
-        async function setMasterAdminPassword(newPassword) {
-            localStorage.setItem('admin_master_pass', newPassword);
-            try {
-                await setDoc(doc(db, `artifacts/${appId}/config`, 'admin'), {
-                    password: newPassword,
-                    updatedAt: serverTimestamp()
-                }, { merge: true });
-            } catch (e) {
-                console.error("Admin pass save error:", e);
-            }
-        }
-
-        window.toggleAdminMode = function() {
-            if (isAdminMode) {
-                isAdminMode = false;
-                // 실시간 리스너 해제
-                if (unsubscribeAdminUsers) { unsubscribeAdminUsers(); unsubscribeAdminUsers = null; }
-                if (unsubscribeAdminRecords) { unsubscribeAdminRecords(); unsubscribeAdminRecords = null; }
-                updateAdminUI();
-                showAlertModal("관리자 해제", "일반 사용자 모드로 전환되었습니다.");
-            } else {
-                showPromptModal("관리자 인증", "관리자 마스터 비밀번호를 입력하세요.", async (pass) => {
-                    const savedPass = await getMasterAdminPassword();
-                    if (pass === savedPass) {
-                        isAdminMode = true;
-                        updateAdminUI();
-                        listenAdminAllData();
-                        showAlertModal("인증 완료", "최고 관리자 실시간 모니터링 모드가 활성화되었습니다.");
-                    } else {
-                        showAlertModal("인증 실패", "비밀번호가 올바르지 않습니다.");
-                    }
-                });
-            }
-        };
-
-        window.openChangeAdminPassModal = function() {
-            document.getElementById('curAdminPass').value = '';
-            document.getElementById('newAdminPass1').value = '';
-            document.getElementById('newAdminPass2').value = '';
-            document.getElementById('changeAdminPassModal').classList.remove('hidden');
-        };
-
-        window.closeChangeAdminPassModal = function() {
-            document.getElementById('changeAdminPassModal').classList.add('hidden');
-        };
-
-        window.submitChangeAdminPassword = async function(e) {
-            e.preventDefault();
-            const cur = document.getElementById('curAdminPass').value;
-            const new1 = document.getElementById('newAdminPass1').value;
-            const new2 = document.getElementById('newAdminPass2').value;
-
-            const savedPass = await getMasterAdminPassword();
-            if (cur !== savedPass) {
-                showAlertModal("오류", "현재 관리자 비밀번호가 일치하지 않습니다.");
-                return;
-            }
-
-            if (new1.length < 4) {
-                showAlertModal("오류", "새 비밀번호는 최소 4자리 이상이어야 합니다.");
-                return;
-            }
-
-            if (new1 !== new2) {
-                showAlertModal("오류", "새 비밀번호 2개가 서로 일치하지 않습니다.");
-                return;
-            }
-
-            showLoading(true, "관리자 비밀번호 클라우드 변경 중...");
-            try {
-                await setMasterAdminPassword(new1);
-                closeChangeAdminPassModal();
-                showLoading(false);
-                showAlertModal("변경 완료", "관리자 마스터 비밀번호가 성공적으로 변경되었습니다.");
-            } catch (err) {
-                showLoading(false);
-                showAlertModal("오류", "비밀번호 변경 실패: " + err.message);
-            }
-        };
-
-        window.startAdminPasswordRecovery = function() {
-            closeModal();
-            showPromptModal("관리자 비밀번호 찾기", "관리자 등록 계정 이메일을 입력하세요:", async (inputEmail) => {
-                if (!inputEmail || !inputEmail.trim()) {
-                    showAlertModal("오류", "이메일을 입력해 주세요.");
-                    return;
-                }
-
-                showLoading(true, "권한 확인 중...");
-                try {
-                    const configDoc = await getDoc(doc(db, `artifacts/${appId}/config`, 'admin'));
-                    let authorizedEmail = configDoc.exists() ? configDoc.data().adminEmail : null;
-
-                    if (!authorizedEmail && currentUser) {
-                        authorizedEmail = currentUser.email;
-                    }
-
-                    showLoading(false);
-                    if (authorizedEmail && inputEmail.trim().toLowerCase() === authorizedEmail.toLowerCase()) {
-                        showPromptModal("새 비밀번호 설정", "새로운 관리자 마스터 비밀번호를 입력하세요:", async (newPass) => {
-                            if (newPass && newPass.trim().length >= 4) {
-                                showLoading(true, "비밀번호 저장 중...");
-                                await setMasterAdminPassword(newPass.trim());
-                                showLoading(false);
-                                showAlertModal("재설정 완료", "관리자 비밀번호가 성공적으로 변경되었습니다.");
-                            } else {
-                                showAlertModal("오류", "비밀번호는 최소 4자리 이상이어야 합니다.");
-                            }
-                        });
-                    } else {
-                        showAlertModal("인증 실패", "관리자 이메일 정보와 일치하지 않습니다.");
-                    }
-                } catch (e) {
-                    showLoading(false);
-                    showAlertModal("오류", "비밀번호 찾기 실패: " + e.message);
-                }
-            });
-        };
-
-        function updateAdminUI() {
-            const adminBtnText = document.getElementById('adminBtnText');
-            const adminBadge = document.getElementById('adminBadge');
-            const tabUsers = document.getElementById('tab-admin-users');
-            const tabMemberMgmt = document.getElementById('tab-admin-member-mgmt');
-
-            if (isAdminMode) {
-                adminBtnText.textContent = "관리자 로그아웃";
-                adminBadge.classList.remove('hidden');
-                if (tabUsers) tabUsers.classList.remove('hidden');
-                if (tabMemberMgmt) tabMemberMgmt.classList.remove('hidden');
-                document.getElementById('pendingApprovalSection').classList.add('hidden');
-                document.getElementById('appSection').classList.remove('hidden');
-            } else {
-                adminBtnText.textContent = "관리자 로그인";
-                adminBadge.classList.add('hidden');
-                if (tabUsers) tabUsers.classList.add('hidden');
-                if (tabMemberMgmt) tabMemberMgmt.classList.add('hidden');
-                switchTab('my-records');
-
-                if (currentUserProfile?.status === 'pending') {
-                    document.getElementById('appSection').classList.add('hidden');
-                    document.getElementById('pendingApprovalSection').classList.remove('hidden');
-                }
-            }
-            renderCalendar();
-        }
-
-        // ==================== 전사 사원 관리 & 승인 시스템 ====================
-        window.toggleUserApproval = async function(userId, currentStatus) {
-            const newStatus = (currentStatus === 'approved') ? 'pending' : 'approved';
-            const actionText = (newStatus === 'approved') ? '가입 승인' : '승인 취소(대기 전환)';
-
-            showConfirmModal("승인 상태 변경", `해당 사원의 계정을 [${actionText}] 하시겠습니까?`, async () => {
-                showLoading(true, `${actionText} 처리 중...`);
-                try {
-                    const userRef = doc(db, `artifacts/${appId}/users`, userId);
-                    await updateDoc(userRef, { status: newStatus });
-                    showLoading(false);
-                    showAlertModal("완료", `사원 계정이 ${actionText} 처리되었습니다.`);
-                } catch (e) {
-                    showLoading(false);
-                    showAlertModal("오류", "승인 상태 변경 실패: " + e.message);
-                }
-            });
-        };
-
-        window.approveUserDirect = async function(userId) {
-            showLoading(true, "회원 가입 승인 처리 중...");
-            try {
-                const userRef = doc(db, `artifacts/${appId}/users`, userId);
-                await updateDoc(userRef, { status: 'approved' });
-                showLoading(false);
-                showAlertModal("승인 완료", "사원의 가입이 정식 승인되어 대시보드를 사용할 수 있습니다.");
-            } catch (e) {
-                showLoading(false);
-                showAlertModal("오류", e.message);
-            }
-        };
-
-        window.editMemberNamePrompt = function(uid, currentName) {
-            showPromptModal("사원명 변경", "새로운 성함(실명)을 입력하세요:", async (name) => {
-                if (!name || !name.trim()) return;
-                showLoading(true, "사원명 수정 중...");
-                try {
-                    await updateDoc(doc(db, `artifacts/${appId}/users`, uid), { name: name.trim() });
-                    showLoading(false);
-                    showAlertModal("완료", "사원명이 정상적으로 수정되었습니다.");
-                } catch (e) {
-                    showLoading(false);
-                    showAlertModal("오류", e.message);
-                }
-            }, false, currentName);
-        };
-
-        window.sendUserPasswordReset = function(userEmail, userName) {
-            showConfirmModal("비밀번호 초기화", `${userName} (${userEmail}) 사원에게 비밀번호 재설정 이메일을 발송하시겠습니까?`, async () => {
-                showLoading(true, "재설정 메일 발송 중...");
-                try {
-                    await sendPasswordResetEmail(auth, userEmail);
-                    showLoading(false);
-                    showAlertModal("발송 완료", `${userEmail} 메일함으로 비밀번호 재설정 링크가 성공적으로 발송되었습니다.`);
-                } catch (err) {
-                    showLoading(false);
-                    showAlertModal("오류 발생", "메일 발송 실패: " + err.message);
-                }
-            });
-        };
-
-        window.deleteUserCompletely = function(userId, userName) {
-            showConfirmModal("사원 계정 영구 삭제", `⚠️ 주의: [${userName}] 사원의 계정과 등록된 모든 출장/휴무 내역이 클라우드에서 영구 삭제됩니다.\n계속하시겠습니까?`, async () => {
-                showLoading(true, "사원 전사 데이터 삭제 중...");
-                try {
-                    const recordsRef = collection(db, `artifacts/${appId}/users/${userId}/leave_records`);
-                    const snap = await getDocs(recordsRef);
-                    const delBatch = [];
-                    snap.docs.forEach(d => delBatch.push(deleteDoc(d.ref)));
-                    await Promise.all(delBatch);
-
-                    await deleteDoc(doc(db, `artifacts/${appId}/users`, userId));
-                    showLoading(false);
-                    showAlertModal("삭제 완료", `[${userName}] 사원의 모든 데이터가 영구 삭제되었습니다.`);
-                } catch (err) {
-                    showLoading(false);
-                    showAlertModal("오류 발생", "사원 삭제 실패: " + err.message);
-                }
-            });
-        };
-
-        // ==================== JSON 전체 & 개별 데이터 백업 / 복원 엔진 ====================
-        window.exportBackupJSON = async function() {
-            if (!isAdminMode) return;
-            showLoading(true, "전체 백업 데이터 추출 중...");
-            try {
-                const usersSnap = await getDocs(collection(db, `artifacts/${appId}/users`));
-                const backupData = {
-                    version: "2.0",
-                    system: "출장 체크 시스템",
-                    exportDate: new Date().toISOString(),
-                    users: []
-                };
-
-                for (const userDoc of usersSnap.docs) {
-                    const uData = userDoc.data();
-                    const recsSnap = await getDocs(collection(db, `artifacts/${appId}/users/${userDoc.id}/leave_records`));
-                    const records = recsSnap.docs.map(rdoc => ({ id: rdoc.id, ...rdoc.data() }));
-                    backupData.users.push({
-                        uid: userDoc.id,
-                        profile: uData,
-                        records: records
-                    });
-                }
-
-                downloadJSON(backupData, `TripTracker_GlobalBackup_${new Date().toISOString().split('T')[0]}.json`);
-                showLoading(false);
-                showAlertModal("백업 완료", "전체 사원 및 출장 휴무 데이터가 안전하게 백업되었습니다.");
-            } catch (err) {
-                showLoading(false);
-                showAlertModal("오류", "백업 생성 실패: " + err.message);
-            }
-        };
-
-        window.exportSingleUserJSON = async function(uid) {
-            if (!isAdminMode) return;
-            showLoading(true, "개별 사원 데이터 추출 중...");
-            try {
-                const userDoc = await getDoc(doc(db, `artifacts/${appId}/users`, uid));
-                if (!userDoc.exists()) throw new Error("사원 정보를 찾을 수 없습니다.");
-                const uData = userDoc.data();
-
-                const recsSnap = await getDocs(collection(db, `artifacts/${appId}/users/${uid}/leave_records`));
-                const records = recsSnap.docs.map(rdoc => ({ id: rdoc.id, ...rdoc.data() }));
-
-                const singleBackup = {
-                    version: "2.0",
-                    type: "single_user",
-                    exportDate: new Date().toISOString(),
-                    user: {
-                        uid,
-                        profile: uData,
-                        records
-                    }
-                };
-
-                downloadJSON(singleBackup, `${uData.name || uid}_출장휴무백업_${new Date().toISOString().split('T')[0]}.json`);
-                showLoading(false);
-                showAlertModal("개별 백업 완료", `${uData.name || '사원'}님의 데이터가 파일로 다운로드되었습니다.`);
-            } catch (err) {
-                showLoading(false);
-                showAlertModal("오류", "개별 백업 실패: " + err.message);
-            }
-        };
-
-        function downloadJSON(obj, filename) {
-            const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        window.triggerImportJSON = function(mode) {
-            if (!isAdminMode) return;
-            document.getElementById('globalBackupFileInput').click();
-        };
-
-        window.handleGlobalBackupFileSelect = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            processBackupFile(file, 'global');
-            e.target.value = '';
-        };
-
-        let targetSingleUserImportUid = null;
-        window.triggerSingleUserImportJSON = function(uid) {
-            if (!isAdminMode) return;
-            targetSingleUserImportUid = uid;
-            document.getElementById('singleUserBackupFileInput').click();
-        };
-
-        window.handleSingleUserBackupFileSelect = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            processBackupFile(file, 'single', targetSingleUserImportUid);
-            e.target.value = '';
-        };
-
-        function processBackupFile(file, mode, specificUid = null) {
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    const importedData = JSON.parse(event.target.result);
-
-                    if (mode === 'global') {
-                        if (!importedData.users || !Array.isArray(importedData.users)) {
-                            throw new Error("유효한 전체 시스템 백업 JSON 파일이 아닙니다.");
-                        }
-                        showConfirmModal("전체 데이터 복원", `총 ${importedData.users.length}명의 사원 프로필 및 출장 휴무 내역을 복원하시겠습니까?\n기존 데이터와 안전하게 병합·동기화됩니다.`, async () => {
-                            executeRestore(importedData.users);
-                        });
-                    } else if (mode === 'single') {
-                        if (!importedData.user || !importedData.user.uid) {
-                            throw new Error("유효한 개별 사원 백업 JSON 파일이 아닙니다.");
-                        }
-                        showConfirmModal("개별 데이터 복원", `선택하신 사원의 데이터를 백업 파일 내용으로 복원하시겠습니까?`, async () => {
-                            executeRestore([importedData.user], specificUid);
-                        });
-                    }
-                } catch (err) {
-                    showAlertModal("파일 검증 실패", "파일을 읽는 중 오류가 발생했습니다: " + err.message);
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        async function executeRestore(usersArray, targetUid = null) {
-            showLoading(true, "클라우드 데이터베이스 복원 동기화 중...");
-            try {
-                for (const userObj of usersArray) {
-                    const uid = targetUid || userObj.uid;
-                    if (userObj.profile) {
-                        const profileToSave = { ...userObj.profile, uid: uid };
-                        await setDoc(doc(db, `artifacts/${appId}/users`, uid), profileToSave, { merge: true });
-                    }
-                    if (userObj.records && Array.isArray(userObj.records)) {
-                        for (const rec of userObj.records) {
-                            const recId = rec.id;
-                            const recData = { ...rec };
-                            delete recData.id;
-                            if (recId) {
-                                await setDoc(doc(db, `artifacts/${appId}/users/${uid}/leave_records`, recId), recData, { merge: true });
-                            } else {
-                                await addDoc(collection(db, `artifacts/${appId}/users/${uid}/leave_records`), recData);
-                            }
-                        }
-                    }
-                }
-                showLoading(false);
-                showAlertModal("복원 완료", "클라우드 데이터 복원이 성공적으로 완료되었습니다.");
-            } catch (err) {
-                showLoading(false);
-                showAlertModal("복원 실패", "복원 중 오류 발생: " + err.message);
-            }
-        }
-
-        // ==================== 회원 관리 전용 테이블 렌더링 ====================
-        window.renderMemberManagementTable = function() {
-            const pendingBody = document.getElementById('pendingUsersTableBody');
-            const pendingUsers = allUsersData.filter(u => u.status === 'pending');
-            const pendingCountBadge = document.getElementById('pendingBadgeCount');
-            if (pendingCountBadge) pendingCountBadge.textContent = `${pendingUsers.length}건`;
-
-            if (pendingBody) {
-                if (pendingUsers.length === 0) {
-                    pendingBody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">현재 승인 대기 중인 회원이 없습니다.</td></tr>`;
-                } else {
-                    pendingBody.innerHTML = pendingUsers.map(u => `
-                        <tr class="hover:bg-amber-50/50">
-                            <td class="p-3 font-bold text-slate-800">${u.name || '(성함 미입력)'}</td>
-                            <td class="p-3 text-slate-600">${u.email}</td>
-                            <td class="p-3 text-xs text-slate-400">${u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleDateString() : '-'}</td>
-                            <td class="p-3 text-right space-x-1.5">
-                                <button onclick="approveUserDirect('${u.uid}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition">
-                                    <i class="fa-solid fa-check mr-1"></i> 승인
-                                </button>
-                                <button onclick="deleteUserCompletely('${u.uid}', '${u.name || '사원'}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg text-xs font-semibold transition">
-                                    반려/삭제
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-            }
-
-            const allBody = document.getElementById('allMembersTableBody');
-            if (!allBody) return;
-
-            const keyword = (document.getElementById('memberSearchInput')?.value || '').toLowerCase().trim();
-            const filteredAll = allUsersData.filter(u => 
-                (u.name && u.name.toLowerCase().includes(keyword)) || 
-                (u.email && u.email.toLowerCase().includes(keyword))
-            );
-
-            if (filteredAll.length === 0) {
-                allBody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">일치하는 사원 정보가 없습니다.</td></tr>`;
-                return;
-            }
-
-            allBody.innerHTML = filteredAll.map(u => {
-                const isApproved = (u.status === 'approved');
-                return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-3 font-bold text-slate-800">${u.name || '-'}</td>
-                        <td class="p-3 text-slate-600 text-xs">${u.email}</td>
-                        <td class="p-3">
-                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full ${isApproved ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
-                                ${isApproved ? '정상 승인' : '승인 대기'}
-                            </span>
-                        </td>
-                        <td class="p-3 text-slate-400 text-xs font-mono">${u.uid.substring(0, 8)}...</td>
-                        <td class="p-3 text-right space-x-1">
-                            <button onclick="editMemberNamePrompt('${u.uid}', '${u.name || ''}')" class="px-2.5 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded text-xs font-semibold">
-                                이름변경
-                            </button>
-                            <button onclick="toggleUserApproval('${u.uid}', '${u.status || 'approved'}')" class="px-2.5 py-1 ${isApproved ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'} rounded text-xs font-semibold">
-                                ${isApproved ? '대기 전환' : '승인'}
-                            </button>
-                            <button onclick="deleteUserCompletely('${u.uid}', '${u.name || '사원'}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded text-xs font-semibold">
-                                계정삭제
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        };
-
-        // ==================== 관리자 휴무 대리/강제 등록 모달 ====================
-        window.openAdminOverrideModal = function() {
-            const select = document.getElementById('adminOverrideUserSelect');
-            select.innerHTML = allUsersData.map(u => `
-                <option value="${u.uid}">${u.name || '미설정'} (${u.email})</option>
-            `).join('');
-
-            document.getElementById('adminOverrideDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('adminOverrideCategory').value = '';
-            document.getElementById('adminOverrideDays').value = 1;
-            document.getElementById('adminOverrideHours').value = 8;
-            document.getElementById('adminOverrideNote').value = '';
-
-            document.getElementById('adminOverrideModal').classList.remove('hidden');
-        };
-
-        window.closeAdminOverrideModal = function() {
-            document.getElementById('adminOverrideModal').classList.add('hidden');
-        };
-
-        window.submitAdminOverrideRecord = async function(e) {
-            e.preventDefault();
-            const targetUserId = document.getElementById('adminOverrideUserSelect').value;
-            const type = document.getElementById('adminOverrideType').value;
-            const date = document.getElementById('adminOverrideDate').value;
-            const category = document.getElementById('adminOverrideCategory').value.trim();
-            const days = parseFloat(document.getElementById('adminOverrideDays').value) || 0;
-            const hours = parseFloat(document.getElementById('adminOverrideHours').value) || 0;
-            const note = document.getElementById('adminOverrideNote').value.trim();
-
-            if (!targetUserId || !date || days <= 0) {
-                showAlertModal("입력 오류", "정확한 사원 및 일수를 입력해 주세요.");
-                return;
-            }
-
-            showLoading(true, "관리자 권한 강제 등록 중...");
-            try {
-                const recordsRef = collection(db, `artifacts/${appId}/users/${targetUserId}/leave_records`);
-                await addDoc(recordsRef, {
-                    type,
-                    date,
-                    category,
-                    days,
-                    hours,
-                    note: note ? `[관리자 직접 보정 등록] ${note}` : `[관리자 직접 보정 등록]`,
-                    createdAt: serverTimestamp()
-                });
-
-                closeAdminOverrideModal();
-                showLoading(false);
-                showAlertModal("등록 완료", "해당 사원의 휴무 내역이 관리자 권한으로 강제 등록되었습니다.");
-            } catch (err) {
-                showLoading(false);
-                showAlertModal("오류", "강제 등록 실패: " + err.message);
-            }
-        };
-
-        // ==================== 실시간 전사 모니터링 엔진 (onSnapshot + collectionGroup) ====================
-        function listenAdminAllData() {
-            if (!isAdminMode) return;
-            showLoading(true, "실시간 클라우드 동기화 채널 연결 중...");
-
-            // 기존 리스너가 있다면 정리
-            if (unsubscribeAdminUsers) unsubscribeAdminUsers();
-            if (unsubscribeAdminRecords) unsubscribeAdminRecords();
-
-            // 1. 사원 목록 실시간 감시 (새 회원 가입 즉시 승인 목록에 노출)
-            const usersRef = collection(db, `artifacts/${appId}/users`);
-            unsubscribeAdminUsers = onSnapshot(usersRef, (userSnapshot) => {
-                allUsersData = userSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
-
-                const selectElem = document.getElementById('adminUserFilterSelect');
-                if (selectElem) {
-                    const currentVal = selectElem.value;
-                    let opts = `<option value="ALL">전체 사원 전체 보기</option>`;
-                    allUsersData.forEach(u => {
-                        opts += `<option value="${u.uid}">${u.name || '미설정'} (${u.email})</option>`;
-                    });
-                    selectElem.innerHTML = opts;
-                    selectElem.value = currentVal || 'ALL';
-                }
-
-                renderAdminSummary();
-                renderMemberManagementTable();
-            }, (err) => {
-                console.error("Users 실시간 감시 오류:", err);
-            });
-
-            // 2. 전사 모든 출장/휴무 내역 실시간 일괄 감시 (사원이 모바일/PC에서 입력 시 즉시 수신)
-            const allRecordsQuery = query(collectionGroup(db, 'leave_records'), orderBy('date', 'desc'));
-            unsubscribeAdminRecords = onSnapshot(allRecordsQuery, (recSnapshot) => {
-                allRecordsData = recSnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    // 경로: artifacts/{appId}/users/{uid}/leave_records/{id}
-                    const pathSegments = doc.ref.path.split('/');
-                    const recordUserId = pathSegments[3]; // user UID
-                    const userObj = allUsersData.find(u => u.uid === recordUserId);
-
-                    return {
-                        id: doc.id,
-                        userId: recordUserId,
-                        userName: userObj ? (userObj.name || userObj.email) : (data.userName || '사원'),
-                        ...data
-                    };
-                });
-
-                renderAdminSummary();
-                renderAdminCalendar();
-                renderAdminMonthlyList();
-                showLoading(false);
-            }, (err) => {
-                console.error("Records 실시간 감시 오류 (Firestore 콘솔 인덱스 필요 가능):", err);
-                showLoading(false);
-            });
-        }
-
-        function renderAdminSummary() {
-            const tbody = document.getElementById('adminUserSummaryBody');
-            const mobileContainer = document.getElementById('adminUserSummaryMobile');
-
-            const summaries = allUsersData.map(user => {
-                const userRecs = allRecordsData.filter(r => r.userId === user.uid);
-                let earnedHrs = 0;
-                let usedHrs = 0;
-
-                userRecs.forEach(r => {
-                    const hrs = parseFloat(r.hours) || 0;
-                    if (r.type === 'earned') earnedHrs += hrs;
-                    else usedHrs += hrs;
-                });
-
-                const remHrs = earnedHrs - usedHrs;
-                return { user, earnedHrs, usedHrs, remHrs };
-            });
-
-            if (tbody) {
-                tbody.innerHTML = summaries.map(s => {
-                    const isApproved = (s.user.status === 'approved');
-                    const statusBadge = isApproved
-                        ? `<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">승인됨</span>`
-                        : `<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 animate-pulse">승인 대기</span>`;
-
-                    return `
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="p-3 font-bold text-slate-800 flex items-center gap-2">
-                                <span>${s.user.name || '미설정'}</span>
-                                <button onclick="viewSpecificUserRecords('${s.user.uid}', '${s.user.name || '사원'}')" class="px-2 py-0.5 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded text-[11px] font-bold">
-                                    내역 조회
-                                </button>
-                            </td>
-                            <td class="p-3 text-slate-600">${s.user.email}</td>
-                            <td class="p-3">${statusBadge}</td>
-                            <td class="p-3 text-emerald-600 font-semibold">${(s.earnedHrs/8).toFixed(1)}일 (${s.earnedHrs}h)</td>
-                            <td class="p-3 text-rose-600 font-semibold">${(s.usedHrs/8).toFixed(1)}일 (${s.usedHrs}h)</td>
-                            <td class="p-3 text-blue-600 font-bold">${(s.remHrs/8).toFixed(1)}일 (${s.remHrs}h)</td>
-                            <td class="p-3 text-right space-x-1 whitespace-nowrap">
-                                <button onclick="exportSingleUserJSON('${s.user.uid}')" class="px-2 py-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded text-xs font-semibold" title="개별 백업">
-                                    <i class="fa-solid fa-download"></i> 백업
-                                </button>
-                                <button onclick="triggerSingleUserImportJSON('${s.user.uid}')" class="px-2 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded text-xs font-semibold mr-1" title="개별 복원">
-                                    <i class="fa-solid fa-upload"></i> 복원
-                                </button>
-                                <button onclick="toggleUserApproval('${s.user.uid}', '${s.user.status || 'approved'}')" class="px-2 py-1 rounded-lg border text-xs font-semibold ${isApproved ? 'border-slate-300 text-slate-600 hover:bg-slate-100' : 'bg-emerald-600 text-white hover:bg-emerald-700'}">
-                                    ${isApproved ? '대기전환' : '가입승인'}
-                                </button>
-                                <button onclick="sendUserPasswordReset('${s.user.email}', '${s.user.name || '사원'}')" class="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-semibold">
-                                    비번 초기화
-                                </button>
-                                <button onclick="deleteUserCompletely('${s.user.uid}', '${s.user.name || '사원'}')" class="px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg text-xs font-semibold">
-                                    삭제
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            }
-
-            if (mobileContainer) {
-                mobileContainer.innerHTML = summaries.map(s => {
-                    const isApproved = (s.user.status === 'approved');
-                    return `
-                        <div class="p-3 bg-white border border-slate-200 rounded-xl flex flex-col gap-2 text-xs">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="font-bold text-slate-800 flex items-center gap-1.5">
-                                        <span>${s.user.name || '미설정'}</span>
-                                        <button onclick="viewSpecificUserRecords('${s.user.uid}', '${s.user.name || '사원'}')" class="px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded text-[10px] font-bold">
-                                            조회
-                                        </button>
-                                    </p>
-                                    <p class="text-slate-500 mt-0.5">+${s.earnedHrs}h / -${s.usedHrs}h (잔여: ${(s.remHrs/8).toFixed(1)}일)</p>
-                                </div>
-                                <div>
-                                    ${isApproved 
-                                        ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">승인됨</span>` 
-                                        : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">대기</span>`}
-                                </div>
+                    <!-- 사원 마스터 디렉토리 -->
+                    <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 sm:p-5 shadow-lg space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-address-book text-blue-400"></i> 사원 마스터 명단 및 휴무 현황
+                                </h3>
+                                <p class="text-xs text-slate-400 mt-0.5">사원을 클릭하여 해당 사원의 캘린더를 바로 확인하거나 계정 상태를 통제할 수 있습니다.</p>
                             </div>
-                            <div class="flex items-center justify-end gap-1.5 pt-1.5 border-t border-slate-100 flex-wrap">
-                                <button onclick="exportSingleUserJSON('${s.user.uid}')" class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-[11px] font-bold">백업</button>
-                                <button onclick="triggerSingleUserImportJSON('${s.user.uid}')" class="px-2 py-1 bg-slate-100 text-slate-700 rounded text-[11px] font-bold">복원</button>
-                                <button onclick="toggleUserApproval('${s.user.uid}', '${s.user.status || 'approved'}')" class="px-2 py-1 rounded border text-[11px] font-bold ${isApproved ? 'bg-slate-50 text-slate-600' : 'bg-emerald-600 text-white'}">
-                                    ${isApproved ? '대기' : '승인'}
-                                </button>
-                                <button onclick="deleteUserCompletely('${s.user.uid}', '${s.user.name || '사원'}')" class="px-2 py-1 bg-rose-50 text-rose-600 rounded text-[11px] font-bold">
-                                    삭제
-                                </button>
+                            <input type="text" id="adminMemberSearchInput" oninput="renderMemberManagementTable()" placeholder="이름 또는 이메일 검색..." class="px-3.5 py-1.5 rounded-xl border border-slate-700 bg-slate-950 text-slate-200 text-xs outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64">
+                        </div>
+
+                        <div class="overflow-x-auto border border-slate-700/60 rounded-xl">
+                            <table class="w-full text-left border-collapse text-xs sm:text-sm min-w-[700px]">
+                                <thead>
+                                    <tr class="bg-slate-950/70 border-b border-slate-700 text-slate-400 font-bold uppercase">
+                                        <th class="p-3">사원명</th>
+                                        <th class="p-3">이메일 계정</th>
+                                        <th class="p-3">승인 상태</th>
+                                        <th class="p-3">총 발생</th>
+                                        <th class="p-3">총 사용</th>
+                                        <th class="p-3">잔여 휴무</th>
+                                        <th class="p-3 text-right">계정 통제 작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminMemberTableBody" class="divide-y divide-slate-700/60 text-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- [VIEW 2] 전사 출장 캘린더 (Unified Calendar Monitor) -->
+                <div id="adminView-calendar" class="hidden space-y-4 bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 sm:p-6 shadow-lg">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/80">
+                        <div class="flex items-center gap-2">
+                            <button onclick="changeAdminCalMonth(-1)" class="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 flex items-center justify-center transition">
+                                <i class="fa-solid fa-chevron-left text-xs"></i>
+                            </button>
+                            <h3 class="text-base sm:text-lg font-black text-white" id="adminCalMonthTitle">2026년 10월</h3>
+                            <button onclick="changeAdminCalMonth(1)" class="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 flex items-center justify-center transition">
+                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                            </button>
+                            <div class="ml-2 flex items-center gap-1.5 bg-slate-950 border border-slate-700 px-2.5 py-1 rounded-xl">
+                                <i class="fa-solid fa-user-check text-blue-400 text-xs"></i>
+                                <span class="text-xs font-bold text-slate-200" id="adminSelectedUserBadge">전체 사원 통합 보기</span>
                             </div>
                         </div>
-                    `;
-                }).join('');
-            }
-        }
 
-        window.openEditModal = function(recordId, userId) {
-            let record = (userId === currentUser?.uid) 
-                ? myRecords.find(r => r.id === recordId)
-                : allRecordsData.find(r => r.id === recordId);
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs font-bold text-slate-400">사원 필터:</label>
+                            <select id="adminUserFilterSelect" onchange="onAdminUserFilterChange(this.value)" class="px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-950 text-slate-200 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="ALL">전체 사원 전체 보기</option>
+                            </select>
+                        </div>
+                    </div>
 
-            if (!record) return;
-
-            document.getElementById('editRecordId').value = record.id;
-            document.getElementById('editUserId').value = userId;
-            document.getElementById('editDate').value = record.date;
-            document.getElementById('editCategory').value = record.category;
-            document.getElementById('editDays').value = record.days;
-            document.getElementById('editHours').value = record.hours;
-            document.getElementById('editNote').value = record.note || '';
-
-            document.getElementById('editRecordModal').classList.remove('hidden');
-        };
-
-        window.closeEditModal = function() {
-            document.getElementById('editRecordModal').classList.add('hidden');
-        };
-
-        window.handleEditSubmit = async function(e) {
-            e.preventDefault();
-            const recordId = document.getElementById('editRecordId').value;
-            const userId = document.getElementById('editUserId').value;
-
-            const updatedData = {
-                date: document.getElementById('editDate').value,
-                category: document.getElementById('editCategory').value,
-                days: parseFloat(document.getElementById('editDays').value),
-                hours: parseFloat(document.getElementById('editHours').value),
-                note: document.getElementById('editNote').value.trim()
-            };
-
-            showLoading(true, "수정 중...");
-            try {
-                const docRef = doc(db, `artifacts/${appId}/users/${userId}/leave_records`, recordId);
-                await updateDoc(docRef, updatedData);
-
-                closeEditModal();
-                showLoading(false);
-                showAlertModal("수정 완료", "성공적으로 수정 및 보정되었습니다.");
-            } catch (err) {
-                showLoading(false);
-                showAlertModal("오류", "수정 실패: " + err.message);
-            }
-        };
-
-        window.deleteRecord = function(recordId, userId) {
-            showConfirmModal("삭제 확인", "내역을 영구 삭제하시겠습니까?", async () => {
-                showLoading(true, "삭제 중...");
-                try {
-                    const docRef = doc(db, `artifacts/${appId}/users/${userId}/leave_records`, recordId);
-                    await deleteDoc(docRef);
-                    showLoading(false);
-                    showAlertModal("삭제 완료", "내역이 삭제되었습니다.");
-                } catch (err) {
-                    showLoading(false);
-                    showAlertModal("오류", "삭제 실패: " + err.message);
-                }
-            });
-        };
-
-        window.switchTab = function(tabName) {
-            if ((tabName === 'admin-users' || tabName === 'admin-member-mgmt') && !isAdminMode) {
-                showAlertModal("접근 제한", "관리자 로그인이 필요한 메뉴입니다.");
-                return;
-            }
-
-            const tabs = ['my-records', 'admin-users', 'admin-member-mgmt'];
-            tabs.forEach(t => {
-                const content = document.getElementById(`content-${t}`);
-                const btn = document.getElementById(`tab-${t}`);
-                if (content) content.classList.toggle('hidden', t !== tabName);
-                if (btn) {
-                    if (t === tabName) {
-                        btn.className = "py-2.5 px-3 sm:px-4 font-bold text-xs sm:text-sm border-b-2 border-blue-600 text-blue-600 flex items-center gap-1.5";
-                    } else {
-                        btn.className = "py-2.5 px-3 sm:px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-1.5";
-                    }
-                }
-            });
-
-            if (tabName === 'admin-users') {
-                renderAdminCalendar();
-                renderAdminMonthlyList();
-            } else if (tabName === 'admin-member-mgmt') {
-                renderMemberManagementTable();
-            }
-        };
-
-        // ==================== 정식 엑셀(.xlsx) 보고서 출력 (SheetJS) ====================
-        window.exportToStyledExcel = function() {
-            let recordsToExport = [];
-            let targetTitleName = '전사';
-
-            if (isAdminMode) {
-                if (selectedAdminUserId !== 'ALL') {
-                    recordsToExport = allRecordsData.filter(r => r.userId === selectedAdminUserId);
-                    const u = allUsersData.find(x => x.uid === selectedAdminUserId);
-                    targetTitleName = `${u?.name || '사원'}`;
-                } else {
-                    recordsToExport = allRecordsData;
-                    targetTitleName = '전사 통합';
-                }
-            } else {
-                recordsToExport = myRecords;
-                targetTitleName = `${currentUserProfile?.name || '사원'}`;
-            }
-
-            if (!recordsToExport || recordsToExport.length === 0) {
-                showAlertModal("알림", "내보낼 데이터가 없습니다.");
-                return;
-            }
-
-            const sortedRecords = [...recordsToExport].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-
-            let totalEarnedHours = 0;
-            let totalUsedHours = 0;
-            sortedRecords.forEach(r => {
-                const hrs = parseFloat(r.hours) || (parseFloat(r.days) * 8) || 0;
-                if (r.type === 'earned') totalEarnedHours += hrs;
-                else totalUsedHours += hrs;
-            });
-            const remainingHours = totalEarnedHours - totalUsedHours;
-            const todayStr = new Date().toISOString().split('T')[0];
-
-            const sheetData = [
-                [`${targetTitleName} 출장 및 보상휴가 관리 보고서`],
-                [`출력일자: ${todayStr}`, "", "", "", "", "", "시스템: 출장 체크 시스템"],
-                [],
-                ["[누적 요약]", "총 발생 휴무", `${(totalEarnedHours/8).toFixed(2)}일 (${totalEarnedHours}시간)`],
-                ["", "총 사용 휴무", `${(totalUsedHours/8).toFixed(2)}일 (${totalUsedHours}시간)`],
-                ["", "현재 잔여 휴무", `${(remainingHours/8).toFixed(2)}일 (${remainingHours}시간)`],
-                [],
-                ["구분", "사원명", "날짜", "유형 / 분류", "일수", "시간(h)", "출장지 및 상세 사유"]
-            ];
-
-            sortedRecords.forEach(r => {
-                const isEarned = (r.type === 'earned');
-                const sign = isEarned ? '+' : '-';
-                sheetData.push([
-                    isEarned ? "발생 (+)" : "사용 (-)",
-                    r.userName || currentUserProfile?.name || '사원',
-                    r.date || '',
-                    r.category || '',
-                    `${sign}${r.days || 0}일`,
-                    r.hours || 0,
-                    r.note || '-'
-                ]);
-            });
-
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(sheetData);
-
-            ws['!cols'] = [
-                { wch: 12 },
-                { wch: 14 },
-                { wch: 14 },
-                { wch: 25 },
-                { wch: 12 },
-                { wch: 10 },
-                { wch: 45 }
-            ];
-
-            XLSX.utils.book_append_sheet(wb, ws, "출장휴무내역");
-            XLSX.writeFile(wb, `출장휴무_체크_보고서_${todayStr}.xlsx`);
-        };
-
-        window.openQRModal = function() {
-            const qrContainer = document.getElementById('qrcode');
-            qrContainer.innerHTML = '';
-            new QRCode(qrContainer, {
-                text: window.location.href,
-                width: 160,
-                height: 160
-            });
-            document.getElementById('qrModal').classList.remove('hidden');
-        };
-
-        window.closeQRModal = function() {
-            document.getElementById('qrModal').classList.add('hidden');
-        };
-
-        function showLoading(show, text = "처리 중...") {
-            const overlay = document.getElementById('loadingOverlay');
-            document.getElementById('loadingText').textContent = text;
-            if (show) overlay.classList.remove('hidden');
-            else overlay.classList.add('hidden');
-        }
-
-        window.showAlertModal = function(title, msg) {
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalMessage').textContent = msg;
-            document.getElementById('modalPromptContainer').classList.add('hidden');
-            document.getElementById('modalButtons').innerHTML = `
-                <button onclick="closeModal()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-blue-700 w-full">확인</button>
-            `;
-            document.getElementById('customModal').classList.remove('hidden');
-        };
-
-        function showConfirmModal(title, msg, onConfirm) {
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalMessage').textContent = msg;
-            document.getElementById('modalPromptContainer').classList.add('hidden');
-            document.getElementById('modalButtons').innerHTML = `
-                <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs sm:text-sm font-semibold w-1/2">취소</button>
-                <button id="modalConfirmBtn" class="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs sm:text-sm font-semibold w-1/2">확인</button>
-            `;
-            document.getElementById('modalConfirmBtn').onclick = () => {
-                closeModal();
-                onConfirm();
-            };
-            document.getElementById('customModal').classList.remove('hidden');
-        }
-
-        function showPromptModal(title, msg, onSubmit, isPassword = true, defaultVal = '') {
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalMessage').textContent = msg;
-            const promptContainer = document.getElementById('modalPromptContainer');
-            const promptInput = document.getElementById('modalPromptInput');
-            promptContainer.classList.remove('hidden');
-            promptInput.value = defaultVal;
-            promptInput.type = isPassword ? 'password' : 'text';
-            document.getElementById('modalPromptEye').className = isPassword ? 'fa-solid fa-eye' : 'hidden';
-
-            document.getElementById('modalButtons').innerHTML = `
-                <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs sm:text-sm font-semibold w-1/2">취소</button>
-                <button id="modalPromptSubmitBtn" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-semibold w-1/2">확인</button>
-            `;
-            document.getElementById('modalPromptSubmitBtn').onclick = () => {
-                const val = promptInput.value;
-                closeModal();
-                onSubmit(val);
-            };
-            document.getElementById('customModal').classList.remove('hidden');
-        }
-
-        window.closeModal = function() {
-            document.getElementById('customModal').classList.add('hidden');
-        };
-    </script>
-</body>
-</html>
+                    <!-- Monthly Stats -->
+                    <div class="flex items-center gap-2 text-xs py-1">
+                        <div class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold" id="adminCalStatEarned">발생: 0일</div>
