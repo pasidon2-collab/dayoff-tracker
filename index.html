@@ -12,6 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- SheetJS (정식 .xlsx 엑셀 생성 라이브러리) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -47,7 +49,7 @@
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white transition-opacity duration-300">
         <i class="fa-solid font-sharp fa-circle-notch fa-spin text-5xl text-blue-500 mb-4"></i>
-        <p class="text-base sm:text-lg font-medium text-slate-100" id="loadingText">파이어베이스 동기화 중...</p>
+        <p class="text-base sm:text-lg font-medium text-slate-100" id="loadingText">파이어베이스 실시간 동기화 중...</p>
     </div>
 
     <!-- Top Navigation Bar -->
@@ -59,7 +61,7 @@
                 </div>
                 <div>
                     <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">출장 체크 시스템</h1>
-                    <p class="text-xs text-slate-500 hidden sm:block">한국 공휴일 기준 보상휴가 자동 계산 및 전사 관리</p>
+                    <p class="text-xs text-slate-500 hidden sm:block">한국 공휴일 기준 보상휴가 자동 계산 및 실시간 전사 관리</p>
                 </div>
             </div>
 
@@ -150,7 +152,7 @@
             <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <span id="adminBadge" class="hidden inline-block px-2.5 py-0.5 bg-amber-400 text-amber-950 font-extrabold text-[11px] rounded-full mb-1 shadow-sm">
-                        <i class="fa-solid fa-crown mr-1"></i> 최고 관리자 모드 가동 중
+                        <i class="fa-solid fa-tower-broadcast animate-pulse mr-1"></i> 최고 관리자 실시간 모니터링 가동 중
                     </span>
                     <h2 class="text-lg sm:text-2xl font-bold" id="welcomeMessage">반갑습니다! 👋</h2>
                 </div>
@@ -159,65 +161,8 @@
                         <i class="fa-solid fa-user-pen"></i> 이름 변경
                     </button>
                     <button onclick="exportToStyledExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold backdrop-blur-md shadow-md transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-file-excel text-base"></i> 엑셀 보고서 내보내기
+                        <i class="fa-solid fa-file-excel text-base"></i> 엑셀 보고서 (.xlsx)
                     </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 근로기준법 법적 가이드 카드 -->
-        <div id="laborLawCard" class="bg-white border border-blue-200 rounded-2xl shadow-sm overflow-hidden scroll-mt-20">
-            <button onclick="toggleLaborLawNotice()" class="w-full p-3.5 sm:p-4 bg-blue-50/70 hover:bg-blue-50 transition flex items-center justify-between text-left">
-                <div class="flex items-center gap-2.5">
-                    <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs sm:text-sm shadow-sm">
-                        <i class="fa-solid fa-scale-balanced"></i>
-                    </span>
-                    <div>
-                        <h4 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                            근로기준법 기반 보상휴가 산정 기준 안내
-                            <span class="text-[10px] font-semibold bg-blue-200/80 text-blue-800 px-1.5 py-0.5 rounded">필독</span>
-                        </h4>
-                        <p class="text-[11px] text-slate-500 hidden sm:block">사전 휴일대체가 아닌 보상휴가제(제57조) 적용 시 법정 가산율 및 출장 규정 안내</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-1 text-slate-400 text-xs">
-                    <span id="laborLawToggleText" class="text-[11px] hidden sm:inline">펼치기</span>
-                    <i id="laborLawArrow" class="fa-solid fa-chevron-up transition-transform duration-200 rotate-180"></i>
-                </div>
-            </button>
-
-            <div id="laborLawContent" class="hidden p-3.5 sm:p-5 border-t border-blue-100 text-xs text-slate-600 space-y-4 bg-white">
-                <div class="p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl space-y-2 text-slate-700">
-                    <p class="font-bold text-amber-950 flex items-center gap-1.5 text-xs sm:text-sm">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
-                        위 근로기준법은 기본적인 사항을 잘 지켰을 경우 생기는 휴무입니다.
-                    </p>
-                    <ol class="list-decimal list-inside space-y-1 text-[11px] sm:text-xs leading-relaxed text-amber-900 pl-1">
-                        <li>장거리 출장 시 다음 날 출근을 위해 전날 미리 출장지로 이동하는 경우, 해당 이동에 따른 휴무는 발생하지 않을 수 있습니다.</li>
-                        <li>출장지와 회사 간 거리 등의 사유로 근무가 없는 주말에 현지에 체류하며 대기하는 경우, 별도의 휴무가 발생하지 않을 수 있습니다.</li>
-                        <li>현재 출장 관련 출퇴근 시간을 정확하게 확인할 수 있는 시스템이 없으므로, 작성자 여러분의 양심과 책임에 맡기고 있습니다. 실제 근무 내용을 기준으로 정확하게 작성해 주시기 바랍니다.</li>
-                    </ol>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-                        <div class="font-bold text-slate-800 flex items-center gap-1.5 mb-1 text-[13px]">
-                            <i class="fa-solid fa-file-contract text-blue-600"></i> 근로기준법 제57조 (보상휴가제)
-                        </div>
-                        <p class="text-slate-600 text-[11px] sm:text-xs leading-relaxed">
-                            근로자대표와의 서면합의에 따라 연장·야간 및 <strong>휴일근로에 대하여 가산수당을 지급하는 대신 유급휴가(보상휴가)</strong>를 부여할 수 있습니다.
-                        </p>
-                    </div>
-
-                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-                        <div class="font-bold text-slate-800 flex items-center gap-1.5 mb-1 text-[13px]">
-                            <i class="fa-solid fa-calculator text-emerald-600"></i> 근로기준법 제56조 (휴일근로 가산율)
-                        </div>
-                        <ul class="text-[11px] sm:text-xs text-slate-600 space-y-1">
-                            <li>• <strong>8시간 이내 휴일근로:</strong> 50% 가산 적용 (<strong>1.5배</strong> 발생)</li>
-                            <li>• <strong>8시간 초과 휴일근로:</strong> 100% 가산 적용 (<strong>2.0배</strong> 발생: 휴일1.5배 + 연장0.5배)</li>
-                        </ul>
-                    </div>
                 </div>
             </div>
         </div>
@@ -255,10 +200,10 @@
                 <i class="fa-solid fa-list-check"></i> 출장 캘린더 & 휴무 관리
             </button>
             <button onclick="switchTab('admin-users')" id="tab-admin-users" class="hidden py-2.5 px-3 sm:px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
-                <i class="fa-solid fa-calendar-days text-amber-500"></i> 사원별 출장 현황
+                <i class="fa-solid fa-calendar-days text-amber-500"></i> 사원별 출장 현황 (실시간)
             </button>
             <button onclick="switchTab('admin-member-mgmt')" id="tab-admin-member-mgmt" class="hidden py-2.5 px-3 sm:px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
-                <i class="fa-solid fa-users-gear text-indigo-500"></i> 회원 관리 및 가입 승인
+                <i class="fa-solid fa-users-gear text-indigo-500"></i> 사원 승인 및 회원 관리
             </button>
         </div>
 
@@ -435,14 +380,14 @@
 
                     <div class="pt-2 text-right">
                         <span class="text-[11px] text-slate-400">
-                            💡 단일 날짜 선택 모드에서 날짜를 누르면 해당 일자의 상세 내역 팝업이 표시됩니다.
+                            💡 달력 날짜를 클릭하면 해당 일자의 상세 내역 팝업이 표시됩니다.
                         </span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tab 2: Admin Dashboard (사원별 출장 현황) -->
+        <!-- Tab 2: Admin Dashboard (사원별 출장 현황 & 실시간 캘린더) -->
         <div id="content-admin-users" class="hidden space-y-4 sm:space-y-6">
             <!-- Admin Top Controls Bar (백업/복원 통합) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -514,7 +459,7 @@
                 </div>
             </div>
 
-            <!-- 관리자 캘린더 뷰 (선택된 사원 기준) -->
+            <!-- 관리자 캘린더 뷰 (실시간 동기화) -->
             <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col space-y-3">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                     <div class="flex items-center gap-2">
@@ -868,7 +813,7 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Integration & Korean Calendar Engine -->
+    <!-- Firebase SDK Integration & Korean Real-Time Engine -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
@@ -883,6 +828,7 @@
         import { 
             getFirestore, 
             collection, 
+            collectionGroup, // 전사 실시간 스트림 리스너용
             doc, 
             setDoc, 
             getDoc, 
@@ -922,6 +868,10 @@
         let isAdminMode = false;
         let isAuthSignUp = false;
         let unsubscribeMyRecords = null;
+
+        // 관리자 실시간 스트림 리스너 관리 변수
+        let unsubscribeAdminUsers = null;
+        let unsubscribeAdminRecords = null;
 
         let calculatedDays = 1.5;
         let calculatedHours = 12;
@@ -1031,26 +981,6 @@
             } else {
                 input.type = 'password';
                 icon.className = 'fa-solid fa-eye';
-            }
-        };
-
-        window.toggleLaborLawNotice = function() {
-            const content = document.getElementById('laborLawContent');
-            const arrow = document.getElementById('laborLawArrow');
-            const toggleText = document.getElementById('laborLawToggleText');
-            const card = document.getElementById('laborLawCard');
-            
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                arrow.classList.remove('rotate-180');
-                if (toggleText) toggleText.textContent = "접기";
-                setTimeout(() => {
-                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-            } else {
-                content.classList.add('hidden');
-                arrow.classList.add('rotate-180');
-                if (toggleText) toggleText.textContent = "펼치기";
             }
         };
 
@@ -1639,7 +1569,7 @@
             }
         };
 
-        // ==================== 관리자 캘린더 엔진 ====================
+        // ==================== 관리자 캘린더 엔진 (실시간 연동) ====================
         window.changeAdminCalMonth = function(delta) {
             adminCalMonth += delta;
             if (adminCalMonth < 0) {
@@ -1947,8 +1877,6 @@
                     });
 
                     await Promise.all(deletePromises);
-
-                    if (isAdminMode) await listenAdminAllData();
                     showLoading(false);
                     showAlertModal("삭제 완료", `선택하신 ${count}개의 내역이 성공적으로 삭제되었습니다.`);
                 } catch (err) {
@@ -2167,6 +2095,9 @@
         window.toggleAdminMode = function() {
             if (isAdminMode) {
                 isAdminMode = false;
+                // 실시간 리스너 해제
+                if (unsubscribeAdminUsers) { unsubscribeAdminUsers(); unsubscribeAdminUsers = null; }
+                if (unsubscribeAdminRecords) { unsubscribeAdminRecords(); unsubscribeAdminRecords = null; }
                 updateAdminUI();
                 showAlertModal("관리자 해제", "일반 사용자 모드로 전환되었습니다.");
             } else {
@@ -2176,7 +2107,7 @@
                         isAdminMode = true;
                         updateAdminUI();
                         listenAdminAllData();
-                        showAlertModal("인증 완료", "최고 관리자 모드가 활성화되었습니다.");
+                        showAlertModal("인증 완료", "최고 관리자 실시간 모니터링 모드가 활성화되었습니다.");
                     } else {
                         showAlertModal("인증 실패", "비밀번호가 올바르지 않습니다.");
                     }
@@ -2306,7 +2237,6 @@
                 try {
                     const userRef = doc(db, `artifacts/${appId}/users`, userId);
                     await updateDoc(userRef, { status: newStatus });
-                    await listenAdminAllData();
                     showLoading(false);
                     showAlertModal("완료", `사원 계정이 ${actionText} 처리되었습니다.`);
                 } catch (e) {
@@ -2321,7 +2251,6 @@
             try {
                 const userRef = doc(db, `artifacts/${appId}/users`, userId);
                 await updateDoc(userRef, { status: 'approved' });
-                await listenAdminAllData();
                 showLoading(false);
                 showAlertModal("승인 완료", "사원의 가입이 정식 승인되어 대시보드를 사용할 수 있습니다.");
             } catch (e) {
@@ -2336,7 +2265,6 @@
                 showLoading(true, "사원명 수정 중...");
                 try {
                     await updateDoc(doc(db, `artifacts/${appId}/users`, uid), { name: name.trim() });
-                    await listenAdminAllData();
                     showLoading(false);
                     showAlertModal("완료", "사원명이 정상적으로 수정되었습니다.");
                 } catch (e) {
@@ -2371,8 +2299,6 @@
                     await Promise.all(delBatch);
 
                     await deleteDoc(doc(db, `artifacts/${appId}/users`, userId));
-
-                    await listenAdminAllData();
                     showLoading(false);
                     showAlertModal("삭제 완료", `[${userName}] 사원의 모든 데이터가 영구 삭제되었습니다.`);
                 } catch (err) {
@@ -2534,7 +2460,6 @@
                         }
                     }
                 }
-                await listenAdminAllData();
                 showLoading(false);
                 showAlertModal("복원 완료", "클라우드 데이터 복원이 성공적으로 완료되었습니다.");
             } catch (err) {
@@ -2663,7 +2588,6 @@
                 });
 
                 closeAdminOverrideModal();
-                await listenAdminAllData();
                 showLoading(false);
                 showAlertModal("등록 완료", "해당 사원의 휴무 내역이 관리자 권한으로 강제 등록되었습니다.");
             } catch (err) {
@@ -2672,33 +2596,19 @@
             }
         };
 
-        // 관리자 데이터 로딩
-        async function listenAdminAllData() {
+        // ==================== 실시간 전사 모니터링 엔진 (onSnapshot + collectionGroup) ====================
+        function listenAdminAllData() {
             if (!isAdminMode) return;
-            showLoading(true, "전 사원 데이터 로딩 중...");
-            try {
-                const usersRef = collection(db, `artifacts/${appId}/users`);
-                const snapshot = await getDocs(usersRef);
+            showLoading(true, "실시간 클라우드 동기화 채널 연결 중...");
 
-                allUsersData = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
-                allRecordsData = [];
+            // 기존 리스너가 있다면 정리
+            if (unsubscribeAdminUsers) unsubscribeAdminUsers();
+            if (unsubscribeAdminRecords) unsubscribeAdminRecords();
 
-                for (const user of allUsersData) {
-                    try {
-                        const recordsRef = collection(db, `artifacts/${appId}/users/${user.uid}/leave_records`);
-                        const recSnap = await getDocs(recordsRef);
-                        recSnap.docs.forEach(rdoc => {
-                            allRecordsData.push({
-                                id: rdoc.id,
-                                userId: user.uid,
-                                userName: user.name || user.email,
-                                ...rdoc.data()
-                            });
-                        });
-                    } catch (innerErr) {
-                        console.warn(`User ${user.uid} records load error:`, innerErr);
-                    }
-                }
+            // 1. 사원 목록 실시간 감시 (새 회원 가입 즉시 승인 목록에 노출)
+            const usersRef = collection(db, `artifacts/${appId}/users`);
+            unsubscribeAdminUsers = onSnapshot(usersRef, (userSnapshot) => {
+                allUsersData = userSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
 
                 const selectElem = document.getElementById('adminUserFilterSelect');
                 if (selectElem) {
@@ -2712,14 +2622,37 @@
                 }
 
                 renderAdminSummary();
+                renderMemberManagementTable();
+            }, (err) => {
+                console.error("Users 실시간 감시 오류:", err);
+            });
+
+            // 2. 전사 모든 출장/휴무 내역 실시간 일괄 감시 (사원이 모바일/PC에서 입력 시 즉시 수신)
+            const allRecordsQuery = query(collectionGroup(db, 'leave_records'), orderBy('date', 'desc'));
+            unsubscribeAdminRecords = onSnapshot(allRecordsQuery, (recSnapshot) => {
+                allRecordsData = recSnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    // 경로: artifacts/{appId}/users/{uid}/leave_records/{id}
+                    const pathSegments = doc.ref.path.split('/');
+                    const recordUserId = pathSegments[3]; // user UID
+                    const userObj = allUsersData.find(u => u.uid === recordUserId);
+
+                    return {
+                        id: doc.id,
+                        userId: recordUserId,
+                        userName: userObj ? (userObj.name || userObj.email) : (data.userName || '사원'),
+                        ...data
+                    };
+                });
+
+                renderAdminSummary();
                 renderAdminCalendar();
                 renderAdminMonthlyList();
-                renderMemberManagementTable();
                 showLoading(false);
-            } catch (err) {
+            }, (err) => {
+                console.error("Records 실시간 감시 오류 (Firestore 콘솔 인덱스 필요 가능):", err);
                 showLoading(false);
-                console.error("listenAdminAllData error:", err);
-            }
+            });
         }
 
         function renderAdminSummary() {
@@ -2861,7 +2794,6 @@
                 await updateDoc(docRef, updatedData);
 
                 closeEditModal();
-                if (isAdminMode) await listenAdminAllData();
                 showLoading(false);
                 showAlertModal("수정 완료", "성공적으로 수정 및 보정되었습니다.");
             } catch (err) {
@@ -2876,8 +2808,6 @@
                 try {
                     const docRef = doc(db, `artifacts/${appId}/users/${userId}/leave_records`, recordId);
                     await deleteDoc(docRef);
-
-                    if (isAdminMode) await listenAdminAllData();
                     showLoading(false);
                     showAlertModal("삭제 완료", "내역이 삭제되었습니다.");
                 } catch (err) {
@@ -2915,7 +2845,7 @@
             }
         };
 
-        // ==================== 서식 적용된 엑셀 보고서 출력 ====================
+        // ==================== 정식 엑셀(.xlsx) 보고서 출력 (SheetJS) ====================
         window.exportToStyledExcel = function() {
             let recordsToExport = [];
             let targetTitleName = '전사';
@@ -2943,116 +2873,54 @@
 
             let totalEarnedHours = 0;
             let totalUsedHours = 0;
-
             sortedRecords.forEach(r => {
                 const hrs = parseFloat(r.hours) || (parseFloat(r.days) * 8) || 0;
                 if (r.type === 'earned') totalEarnedHours += hrs;
                 else totalUsedHours += hrs;
             });
-
             const remainingHours = totalEarnedHours - totalUsedHours;
             const todayStr = new Date().toISOString().split('T')[0];
-            const titleText = `${targetTitleName} 출장 및 보상휴가 관리 보고서`;
 
-            let excelTemplate = `
-                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-                <head>
-                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-                    <!--[if gte mso 9]>
-                    <xml>
-                    <x:ExcelWorkbook>
-                    <x:ExcelWorksheets>
-                    <x:ExcelWorksheet>
-                    <x:Name>출장및휴무내역</x:Name>
-                    <x:WorksheetOptions>
-                    <x:DisplayGridlines/>
-                    </x:WorksheetOptions>
-                    </x:ExcelWorksheet>
-                    </x:ExcelWorksheets>
-                    </x:ExcelWorkbook>
-                    </xml>
-                    <![endif]-->
-                    <style>
-                        body { font-family: '맑은 고딕', Arial, sans-serif; }
-                        .title { font-size: 18pt; font-weight: bold; color: #1e3a8a; text-align: center; height: 45px; }
-                        .sub-info { font-size: 10pt; color: #64748b; text-align: right; }
-                        .summary-card-header { background-color: #f1f5f9; font-weight: bold; font-size: 10pt; border: 1px solid #cbd5e1; text-align: center; }
-                        .summary-earned { font-size: 11pt; font-weight: bold; color: #059669; text-align: center; background-color: #ecfdf5; border: 1px solid #cbd5e1; height: 28px; }
-                        .summary-used { font-size: 11pt; font-weight: bold; color: #e11d48; text-align: center; background-color: #fff1f2; border: 1px solid #cbd5e1; height: 28px; }
-                        .summary-rem { font-size: 11pt; font-weight: bold; color: #2563eb; text-align: center; background-color: #eff6ff; border: 1px solid #cbd5e1; height: 28px; }
-                        .tbl-header th { background-color: #1e40af; color: #ffffff; font-weight: bold; font-size: 11pt; border: 1px solid #1e3a8a; height: 32px; text-align: center; }
-                        .tbl-row td { border: 1px solid #e2e8f0; font-size: 10pt; height: 26px; }
-                        .badge-earned { background-color: #ecfdf5; color: #047857; font-weight: bold; text-align: center; }
-                        .badge-used { background-color: #fff1f2; color: #be123c; font-weight: bold; text-align: center; }
-                        .text-center { text-align: center; }
-                        .text-right { text-align: right; }
-                        .text-left { text-align: left; }
-                    </style>
-                </head>
-                <body>
-                    <table>
-                        <tr>
-                            <td colspan="7" class="title">${titleText}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="7" class="sub-info">출력일자: ${todayStr} | 시스템: 출장 체크 시스템</td>
-                        </tr>
-                        <tr><td></td></tr>
-                        <tr>
-                            <td colspan="2" class="summary-card-header">총 발생 휴무 (누적)</td>
-                            <td colspan="2" class="summary-card-header">총 사용 휴무 (차감)</td>
-                            <td colspan="3" class="summary-card-header">현재 잔여 보유 휴무</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" class="summary-earned">${(totalEarnedHours/8).toFixed(2)}일 (${totalEarnedHours}시간)</td>
-                            <td colspan="2" class="summary-used">${(totalUsedHours/8).toFixed(2)}일 (${totalUsedHours}시간)</td>
-                            <td colspan="3" class="summary-rem">${(remainingHours/8).toFixed(2)}일 (${remainingHours}시간)</td>
-                        </tr>
-                        <tr><td></td></tr>
-                        <tr class="tbl-header">
-                            <th style="width: 80px;">구분</th>
-                            <th style="width: 110px;">사원명</th>
-                            <th style="width: 110px;">날짜</th>
-                            <th style="width: 170px;">유형 / 분류</th>
-                            <th style="width: 90px;">일수</th>
-                            <th style="width: 90px;">시간</th>
-                            <th style="width: 320px;">출장지 및 상세 사유</th>
-                        </tr>
-            `;
+            const sheetData = [
+                [`${targetTitleName} 출장 및 보상휴가 관리 보고서`],
+                [`출력일자: ${todayStr}`, "", "", "", "", "", "시스템: 출장 체크 시스템"],
+                [],
+                ["[누적 요약]", "총 발생 휴무", `${(totalEarnedHours/8).toFixed(2)}일 (${totalEarnedHours}시간)`],
+                ["", "총 사용 휴무", `${(totalUsedHours/8).toFixed(2)}일 (${totalUsedHours}시간)`],
+                ["", "현재 잔여 휴무", `${(remainingHours/8).toFixed(2)}일 (${remainingHours}시간)`],
+                [],
+                ["구분", "사원명", "날짜", "유형 / 분류", "일수", "시간(h)", "출장지 및 상세 사유"]
+            ];
 
             sortedRecords.forEach(r => {
                 const isEarned = (r.type === 'earned');
-                const typeBadgeClass = isEarned ? 'badge-earned' : 'badge-used';
-                const typeText = isEarned ? '발생 (+)' : '사용 (-)';
-                const userName = r.userName || currentUserProfile?.name || '사원';
                 const sign = isEarned ? '+' : '-';
-
-                excelTemplate += `
-                    <tr class="tbl-row">
-                        <td class="${typeBadgeClass}">${typeText}</td>
-                        <td class="text-center font-bold">${userName}</td>
-                        <td class="text-center">${r.date || ''}</td>
-                        <td class="text-left">${r.category || ''}</td>
-                        <td class="text-center font-bold" style="color: ${isEarned ? '#047857' : '#be123c'};">${sign}${r.days || 0}일</td>
-                        <td class="text-center" style="color: ${isEarned ? '#047857' : '#be123c'};">${r.hours || 0}h</td>
-                        <td class="text-left">${(r.note || '-').replace(/"/g, '&quot;')}</td>
-                    </tr>
-                `;
+                sheetData.push([
+                    isEarned ? "발생 (+)" : "사용 (-)",
+                    r.userName || currentUserProfile?.name || '사원',
+                    r.date || '',
+                    r.category || '',
+                    `${sign}${r.days || 0}일`,
+                    r.hours || 0,
+                    r.note || '-'
+                ]);
             });
 
-            excelTemplate += `
-                    </table>
-                </body>
-                </html>
-            `;
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(sheetData);
 
-            const blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `출장휴무_체크_보고서_${todayStr}.xls`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            ws['!cols'] = [
+                { wch: 12 },
+                { wch: 14 },
+                { wch: 14 },
+                { wch: 25 },
+                { wch: 12 },
+                { wch: 10 },
+                { wch: 45 }
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, "출장휴무내역");
+            XLSX.writeFile(wb, `출장휴무_체크_보고서_${todayStr}.xlsx`);
         };
 
         window.openQRModal = function() {
